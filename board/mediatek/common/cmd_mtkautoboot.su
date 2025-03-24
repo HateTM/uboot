@@ -1,0 +1,2 @@
+cmd_mtkautoboot.c:21:12:do_mtkautoboot.part.0	384	static
+cmd_mtkautoboot.c:21:12:do_mtkautoboot	32	static

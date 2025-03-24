@@ -1,0 +1,8 @@
+bootm.c:55:13:board_quiesce_devices	0	static
+bootm.c:59:12:mtk_ar_update_fw_ar_ver	0	static
+bootm.c:259:5:bootm_find_images	64	static
+bootm.c:450:7:bootm_disable_interrupts	16	static
+bootm.c:584:5:bootm_process_cmdline	0	static
+bootm.c:606:5:bootm_process_cmdline_env	0	static
+bootm.c:673:5:do_bootm_states	144	static
+bootm.c:975:13:switch_to_non_secure_mode	0	static

@@ -1,0 +1,9 @@
+bootmenu_ubi.c:65:12:write_flash_image	48	static
+bootmenu_ubi.c:52:12:write_firmware	16	static
+bootmenu_ubi.c:91:12:erase_env	32	static
+bootmenu_ubi.c:16:12:write_part.constprop	48	static
+bootmenu_ubi.c:40:12:write_bl2	0	static
+bootmenu_ubi.c:46:12:write_fip	0	static
+bootmenu_ubi.c:142:6:board_upgrade_data_parts	0	static
+bootmenu_ubi.c:148:5:board_boot_default	0	static
+bootmenu_ubi.c:180:6:board_bootmenu_entries	0	static

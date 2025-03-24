@@ -1,0 +1,10 @@
+.mt8518-ap1-emmc.dtb.pre.o: arch/arm/dts/.mt8518-ap1-emmc.dtb.pre.tmp \
+ include/linux/kconfig.h include/generated/autoconf.h include/config.h \
+ include/config_uncmd_spl.h include/configs/mt7986.h \
+ include/linux/sizes.h include/linux/const.h \
+ arch/arm/include/asm/config.h include/linux/kconfig.h \
+ include/config_fallbacks.h arch/arm/dts/mt8518.dtsi \
+ arch/arm/dts/include/dt-bindings/clock/mt8518-clk.h \
+ arch/arm/dts/include/dt-bindings/gpio/gpio.h \
+ arch/arm/dts/include/dt-bindings/interrupt-controller/irq.h \
+ arch/arm/dts/include/dt-bindings/interrupt-controller/arm-gic.h

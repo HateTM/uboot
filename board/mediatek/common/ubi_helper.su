@@ -1,0 +1,14 @@
+ubi_helper.c:141:27:find_ubi_volume	64	static
+ubi_helper.c:158:12:remove_ubi_volume	64	static
+ubi_helper.c:204:12:create_ubi_volume	208	static
+ubi_helper.c:98:12:mount_ubi	32	static
+ubi_helper.c:63:12:mtd_update_generic	48	static
+ubi_helper.c:588:12:setKeyValue.constprop	80	static
+ubi_helper.c:310:12:read_ubi_volume.constprop	112	static
+ubi_helper.c:239:12:update_ubi_volume.constprop	64	static
+ubi_helper.c:32:6:ubi_probe_mtd_devices	0	static
+ubi_helper.c:537:5:ubi_upgrade_image	128	static
+ubi_helper.c:751:5:is_recovery_button_pressed	48	static
+ubi_helper.c:777:5:check_recovery_button	48	static
+ubi_helper.c:806:6:tp_set_testmode	64	static
+ubi_helper.c:863:5:ubi_boot_image	96	static

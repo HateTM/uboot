@@ -1,0 +1,5 @@
+bootmenu.c:83:13:bootmenu_print_entry	48	static
+bootmenu.c:318:13:bootmenu_destroy	48	static
+bootmenu.c:461:13:menu_display_statusline	64	static
+bootmenu.c:578:5:do_bootmenu	144	static
+bootmenu.c:262:14:bootmenu_choice_entry	80	static

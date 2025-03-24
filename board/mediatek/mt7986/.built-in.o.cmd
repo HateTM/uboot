@@ -1,0 +1,1 @@
+cmd_board/mediatek/mt7986/built-in.o :=  rm -f board/mediatek/mt7986/built-in.o; /home/hatetm/temp_data/sdk/openwrt-21.02/staging_dir/toolchain-aarch64_cortex-a53_gcc-8.4.0_musl/bin/aarch64-openwrt-linux-musl-ar cDPrsT board/mediatek/mt7986/built-in.o board/mediatek/mt7986/mt7986_rfb.o board/mediatek/mt7986/bootmenu_ubi.o

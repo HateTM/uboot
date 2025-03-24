@@ -1,0 +1,12 @@
+.mt7623n-bananapi-bpi-r2.dtb.pre.o: \
+ arch/arm/dts/.mt7623n-bananapi-bpi-r2.dtb.pre.tmp \
+ include/linux/kconfig.h include/generated/autoconf.h \
+ arch/arm/dts/mt7623.dtsi \
+ arch/arm/dts/include/dt-bindings/clock/mt7623-clk.h \
+ arch/arm/dts/include/dt-bindings/gpio/gpio.h \
+ arch/arm/dts/include/dt-bindings/interrupt-controller/irq.h \
+ arch/arm/dts/include/dt-bindings/interrupt-controller/arm-gic.h \
+ arch/arm/dts/include/dt-bindings/phy/phy.h \
+ arch/arm/dts/include/dt-bindings/power/mt7623-power.h \
+ arch/arm/dts/include/dt-bindings/reset/mt7623-reset.h \
+ arch/arm/dts/skeleton.dtsi arch/arm/dts/mt7623-u-boot.dtsi

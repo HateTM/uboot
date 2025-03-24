@@ -1,0 +1,10 @@
+.mt7986b-rfb.dtb.pre.o: arch/arm/dts/.mt7986b-rfb.dtb.pre.tmp \
+ include/linux/kconfig.h include/generated/autoconf.h \
+ arch/arm/dts/mt7986.dtsi \
+ arch/arm/dts/include/dt-bindings/interrupt-controller/irq.h \
+ arch/arm/dts/include/dt-bindings/interrupt-controller/arm-gic.h \
+ arch/arm/dts/include/dt-bindings/phy/phy.h \
+ arch/arm/dts/include/dt-bindings/clock/mt7986-clk.h \
+ arch/arm/dts/include/dt-bindings/reset/mt7629-reset.h \
+ arch/arm/dts/include/dt-bindings/pinctrl/mt65xx.h \
+ arch/arm/dts/include/dt-bindings/gpio/gpio.h

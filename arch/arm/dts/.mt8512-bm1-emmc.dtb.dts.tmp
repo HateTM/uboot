@@ -1,0 +1,338 @@
+# 0 "arch/arm/dts/.mt8512-bm1-emmc.dtb.pre.tmp"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "././include/linux/kconfig.h" 1
+
+
+
+# 1 "include/generated/autoconf.h" 1
+# 5 "././include/linux/kconfig.h" 2
+# 0 "<command-line>" 2
+# 1 "arch/arm/dts/.mt8512-bm1-emmc.dtb.pre.tmp"
+
+
+
+
+
+
+
+/dts-v1/;
+
+# 1 "include/config.h" 1
+
+
+# 1 "include/config_uncmd_spl.h" 1
+# 4 "include/config.h" 2
+# 1 "include/configs/mt7986.h" 1
+# 12 "include/configs/mt7986.h"
+# 1 "include/linux/sizes.h" 1
+# 11 "include/linux/sizes.h"
+# 1 "include/linux/const.h" 1
+# 12 "include/linux/sizes.h" 2
+# 13 "include/configs/mt7986.h" 2
+# 5 "include/config.h" 2
+# 1 "./arch/arm/include/asm/config.h" 1
+# 6 "include/config.h" 2
+# 1 "include/linux/kconfig.h" 1
+# 7 "include/config.h" 2
+# 1 "include/config_fallbacks.h" 1
+# 8 "include/config.h" 2
+# 11 "arch/arm/dts/.mt8512-bm1-emmc.dtb.pre.tmp" 2
+# 1 "arch/arm/dts/mt8512.dtsi" 1
+
+
+
+
+
+
+
+# 1 "./arch/arm/dts/include/dt-bindings/clock/mt8512-clk.h" 1
+# 9 "arch/arm/dts/mt8512.dtsi" 2
+# 1 "./arch/arm/dts/include/dt-bindings/gpio/gpio.h" 1
+# 10 "arch/arm/dts/mt8512.dtsi" 2
+# 1 "./arch/arm/dts/include/dt-bindings/interrupt-controller/irq.h" 1
+# 11 "arch/arm/dts/mt8512.dtsi" 2
+# 1 "./arch/arm/dts/include/dt-bindings/interrupt-controller/arm-gic.h" 1
+# 12 "arch/arm/dts/mt8512.dtsi" 2
+# 1 "./arch/arm/dts/include/dt-bindings/phy/phy.h" 1
+# 13 "arch/arm/dts/mt8512.dtsi" 2
+
+/ {
+ compatible = "mediatek,mt8512";
+ interrupt-parent = <&sysirq>;
+ #address-cells = <1>;
+ #size-cells = <1>;
+
+ gic: interrupt-controller@c000000 {
+   compatible = "arm,gic-v3";
+  #interrupt-cells = <3>;
+  interrupt-parent = <&gic>;
+  interrupt-controller;
+  reg = <0xc000000 0x40000>,
+     <0xc080000 0x200000>;
+  interrupts = <1 9
+   ((((1 << (4)) - 1) << 8) | 4)>;
+ };
+
+ topckgen: clock-controller@10000000 {
+  compatible = "mediatek,mt8512-topckgen";
+  reg = <0x10000000 0x1000>;
+  #clock-cells = <1>;
+ };
+
+ topckgen_cg: clock-controller-cg@10000000 {
+  compatible = "mediatek,mt8512-topckgen-cg";
+  reg = <0x10000000 0x1000>;
+  #clock-cells = <1>;
+ };
+
+ infracfg: clock-controller@10001000 {
+  compatible = "mediatek,mt8512-infracfg";
+  reg = <0x10001000 0x1000>;
+  #clock-cells = <1>;
+ };
+
+ pinctrl: pinctrl@10005000 {
+  compatible = "mediatek,mt8512-pinctrl";
+  reg = <0x10005000 0x1000>;
+  gpio: gpio-controller {
+   gpio-controller;
+   #gpio-cells = <2>;
+  };
+ };
+
+ watchdog0: watchdog@10007000 {
+  compatible = "mediatek,wdt";
+  reg = <0x10007000 0x1000>;
+  interrupts = <0 190 2>;
+  #reset-cells = <1>;
+  status = "disabled";
+  timeout-sec = <60>;
+  reset-on-timeout;
+ };
+
+ timer0: apxgpt@10008000 {
+  compatible = "mediatek,timer";
+  reg = <0x10008000 0x1000>;
+  interrupts = <0 138 8>;
+  clocks = <&topckgen 48>,
+    <&topckgen 1>,
+    <&infracfg 1>;
+  clock-names = "clk13m",
+    "clk32k",
+    "bus";
+ };
+
+ apmixedsys: clock-controller@1000c000 {
+  compatible = "mediatek,mt8512-apmixedsys";
+  reg = <0x1000c000 0x1000>;
+  #clock-cells = <1>;
+ };
+
+ sysirq: interrupt-controller@10200a80 {
+  compatible = "mediatek,sysirq";
+  interrupt-controller;
+  #interrupt-cells = <3>;
+  interrupt-parent = <&gic>;
+  reg = <0x10200a80 0x50>;
+ };
+
+ uart0: serial@11002000 {
+  compatible = "mediatek,hsuart";
+  reg = <0x11002000 0x1000>;
+  interrupts = <0 24 8>;
+  clocks = <&topckgen 47>,
+   <&infracfg 12>;
+  clock-names = "baud", "bus";
+  status = "disabled";
+ };
+
+ usb3: usb@11213e00 {
+  compatible = "mediatek,mt8512-mtu3", "mediatek,mtu3";
+  reg = <0x11213e00 0x0100>;
+  reg-names = "ippc";
+  phys = <&u2port0 3>, <&u2port1 3>;
+  clocks = <&infracfg 50>,
+    <&topckgen 6>,
+    <&infracfg 2>;
+  clock-names = "sys_ck", "ref_ck", "mcu_ck";
+  #address-cells = <1>;
+  #size-cells = <1>;
+  ranges;
+  status = "disabled";
+
+  ssusb: usb@11210000 {
+   compatible = "mediatek,ssusb";
+   reg = <0x11210000 0x3e00>;
+   interrupts = <0 16 8>;
+   reg-names = "mac";
+   status = "disabled";
+  };
+ };
+
+ u3phy: usb-phy@11cc0000 {
+  compatible = "mediatek,mt8512-tphy",
+        "mediatek,generic-tphy-v2";
+  #address-cells = <1>;
+  #size-cells = <1>;
+  ranges;
+  status = "disabled";
+
+  u2port0: usb-phy@11cc0000 {
+   reg = <0x11cc0000 0x400>;
+   clocks = <&topckgen 4>;
+   clock-names = "ref";
+   #phy-cells = <1>;
+   status = "okay";
+  };
+
+  u2port1: usb-phy@11c40000 {
+   reg = <0x11c40000 0x400>;
+   #phy-cells = <1>;
+   status = "okay";
+  };
+ };
+
+ mmc0: mmc@11230000 {
+  compatible = "mediatek,mt8512-mmc";
+  reg = <0x11230000 0x1000>,
+        <0x11cd0000 0x1000>;
+  interrupts = <0 78 8>;
+  clocks = <&topckgen 65>,
+    <&infracfg 20>,
+    <&infracfg 39>;
+  clock-names = "source", "hclk", "source_cg";
+  status = "disabled";
+ };
+
+};
+# 12 "arch/arm/dts/.mt8512-bm1-emmc.dtb.pre.tmp" 2
+
+/ {
+ #address-cells = <1>;
+ #size-cells = <1>;
+
+ model = "MT8512 BM1 EMMC";
+
+ chosen {
+  stdout-path = &uart0;
+  tick-timer = &timer0;
+ };
+
+ memory@40000000 {
+  device_type = "memory";
+  reg = <0x40000000 0x20000000>;
+ };
+
+ reg_1p8v: regulator-1p8v {
+  compatible = "regulator-fixed";
+  regulator-name = "fixed-1.8V";
+  regulator-min-microvolt = <1800000>;
+  regulator-max-microvolt = <1800000>;
+  regulator-boot-on;
+  regulator-always-on;
+ };
+
+ reg_3p3v: regulator-3p3v {
+  compatible = "regulator-fixed";
+  regulator-name = "fixed-3.3V";
+  regulator-min-microvolt = <3300000>;
+  regulator-max-microvolt = <3300000>;
+  regulator-boot-on;
+  regulator-always-on;
+ };
+
+ usb_p0_vbus: regulator@0 {
+  compatible = "regulator-fixed";
+  regulator-name = "p0_vbus";
+  regulator-min-microvolt = <5000000>;
+  regulator-max-microvolt = <5000000>;
+  gpio = <&gpio 27 0>;
+  enable-active-high;
+ };
+
+ usb_p1_vbus: regulator@1 {
+  compatible = "regulator-fixed";
+  regulator-name = "p1_vbus";
+  regulator-min-microvolt = <5000000>;
+  regulator-max-microvolt = <5000000>;
+  gpio = <&gpio 32 0>;
+  enable-active-high;
+  regulator-always-on;
+ };
+};
+
+&mmc0 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&mmc0_pins_default>;
+ bus-width = <8>;
+ max-frequency = <200000000>;
+ cap-mmc-highspeed;
+ mmc-hs200-1_8v;
+ cap-mmc-hw-reset;
+ vmmc-supply = <&reg_3p3v>;
+ vqmmc-supply = <&reg_1p8v>;
+ non-removable;
+ status = "okay";
+};
+
+&pinctrl {
+ mmc0_pins_default: mmc0default {
+  mux {
+   function = "msdc";
+   groups = "msdc0";
+  };
+
+  conf-cmd-data {
+   pins = "MSDC0_CMD", "MSDC0_DAT0", "MSDC0_DAT1",
+          "MSDC0_DAT2", "MSDC0_DAT3", "MSDC0_DAT4",
+          "MSDC0_DAT5", "MSDC0_DAT6", "MSDC0_DAT7";
+   input-enable;
+   drive-strength = <6>;
+   bias-pull-up;
+  };
+
+  conf-clk {
+   pins = "MSDC0_CLK";
+   drive-strength = <6>;
+   bias-pull-down;
+  };
+
+  conf-rst {
+   pins = "MSDC0_RSTB";
+   bias-pull-up;
+  };
+ };
+
+  uart0_pins: uart0 {
+   mux {
+    function = "uart";
+    groups = "uart0_0_rxd_txd";
+   };
+  };
+};
+
+&ssusb {
+ dr_mode = "peripheral";
+ maximum-speed = "high-speed";
+ status = "okay";
+};
+
+&usb3 {
+ vbus-supply = <&usb_p0_vbus>;
+ status = "okay";
+};
+
+&u3phy {
+ status = "okay";
+};
+
+&uart0 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&uart0_pins>;
+ status = "okay";
+};
+
+&watchdog0 {
+ status = "okay";
+};

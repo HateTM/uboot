@@ -1,0 +1,2 @@
+cpu.c:13:5:arch_cpu_init	16	static
+cpu.c:20:6:enable_caches	0	static

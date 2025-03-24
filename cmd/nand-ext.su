@@ -1,0 +1,16 @@
+nand-ext.c:1050:1:complete_nand	0	static
+nand-ext.c:234:13:dump_buf	128	static
+nand-ext.c:18:13:mtd_show_parts	80	static
+nand-ext.c:33:13:mtd_show_device	32	static
+nand-ext.c:79:12:do_nand_list	32	static
+nand-ext.c:105:25:nand_get_curr_dev	48	static
+nand-ext.c:335:12:do_nand_bad	48	static
+nand-ext.c:171:12:do_nand_info	16	static
+nand-ext.c:158:25:nand_get_part	48	static
+nand-ext.c:1020:12:do_nand_io	224	static
+nand-ext.c:387:12:do_nand_bitflip	144	static
+nand-ext.c:275:12:do_nand_dump	128	static
+nand-ext.c:504:12:do_nand_erase	192	static
+nand-ext.c:354:12:do_nand_markbad	48	static
+nand-ext.c:184:12:do_nand_select	32	static
+nand-ext.c:1050:1:do_nand	48	static

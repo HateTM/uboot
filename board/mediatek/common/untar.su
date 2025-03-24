@@ -1,0 +1,4 @@
+untar.c:63:5:tar_header_checksum	544	static
+untar.c:84:5:tar_ctx_init	0	static
+untar.c:97:5:tar_ctx_next_file	64	static
+untar.c:174:5:parse_tar_image	208	static

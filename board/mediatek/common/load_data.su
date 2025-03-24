@@ -1,0 +1,12 @@
+load_data.c:34:12:env_read_cli_set	1152	static
+load_data.c:170:12:load_xymodem	96	static
+load_data.c:210:12:load_ymodem	0	static
+load_data.c:205:12:load_xmodem	0	static
+load_data.c:163:12:getcymodem	16	static
+load_data.c:215:12:load_kermit	96	static
+load_data.c:245:12:load_srecord	96	static
+load_data.c:80:5:env_update	64	static
+load_data.c:116:12:load_tftp.part.3	1088	static
+load_data.c:116:12:load_tftp	48	static
+load_data.c:96:5:confirm_yes	1056	static
+load_data.c:351:5:load_data	80	static
