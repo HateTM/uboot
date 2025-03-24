@@ -1,0 +1,8 @@
+core.c:108:6:nanddev_isreserved.part.1	16	static
+core.c:28:6:nanddev_isbad	48	static
+core.c:67:5:nanddev_markbad	48	static
+core.c:108:6:nanddev_isreserved	0	static
+core.c:132:5:nanddev_erase	32	static
+core.c:167:5:nanddev_mtd_erase	96	static
+core.c:202:5:nanddev_init	0	static
+core.c:247:6:nanddev_cleanup	0	static

@@ -1,0 +1,7 @@
+gigadevice.c:51:12:gd5fxgqxxexxg_ooblayout_ecc	0	static
+gigadevice.c:63:12:gd5fxgqxxexxg_ooblayout_free	0	static
+gigadevice.c:160:12:esmt_1_ooblayout_ecc	0	static
+gigadevice.c:172:12:esmt_1_ooblayout_free	0	static
+gigadevice.c:118:12:gd5fxgq5xexxg_ecc_get_status	96	static
+gigadevice.c:76:12:gd5fxgq4xexxg_ecc_get_status	96	static
+gigadevice.c:218:12:gigadevice_spinand_detect	16	static

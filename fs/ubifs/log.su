@@ -1,0 +1,10 @@
+log.c:595:12:add_node	80	static
+log.c:577:13:destroy_done_tree	32	static
+log.c:35:19:ubifs_search_bud	0	static
+log.c:64:20:ubifs_get_wbuf	0	static
+log.c:117:6:ubifs_add_bud	32	static
+log.c:169:5:ubifs_add_bud_to_log	64	static
+log.c:352:5:ubifs_log_start_commit	96	static
+log.c:451:5:ubifs_log_end_commit	0	static
+log.c:500:5:ubifs_log_post_commit	64	static
+log.c:626:5:ubifs_consolidate_log	128	static

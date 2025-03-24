@@ -1,0 +1,1 @@
+cmd_drivers/mmc/built-in.o :=  rm -f drivers/mmc/built-in.o; /home/hatetm/temp_data/sdk/openwrt-21.02/staging_dir/toolchain-aarch64_cortex-a53_gcc-8.4.0_musl/bin/aarch64-openwrt-linux-musl-ar cDPrsT drivers/mmc/built-in.o drivers/mmc/mmc.o drivers/mmc/mmc-uclass.o drivers/mmc/mmc_write.o drivers/mmc/mtk-sd.o

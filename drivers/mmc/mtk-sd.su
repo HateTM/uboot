@@ -1,0 +1,12 @@
+mtk-sd.c:1005:12:msdc_ops_get_wp	16	static
+mtk-sd.c:983:12:msdc_ops_get_cd	16	static
+mtk-sd.c:1692:12:msdc_of_to_plat	48	static
+mtk-sd.c:1743:12:msdc_drv_bind	32	static
+mtk-sd.c:1038:32:get_best_delay.isra.7	96	static
+mtk-sd.c:1159:12:msdc_tune_response	144	static
+mtk-sd.c:1412:12:msdc_execute_tuning	160	static
+mtk-sd.c:963:12:msdc_ops_set_ios	64	static
+mtk-sd.c:403:13:msdc_reset_hw.isra.10	32	static
+mtk-sd.c:1649:12:msdc_drv_probe	64	static
+mtk-sd.c:413:13:msdc_fifo_clr.isra.11	32	static
+mtk-sd.c:771:12:msdc_ops_send_cmd	48	static

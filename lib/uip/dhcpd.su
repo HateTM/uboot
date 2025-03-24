@@ -1,0 +1,7 @@
+dhcpd.c:221:1:add_dhcpd_subnet_mask	48	static
+dhcpd.c:459:12:dhcpd_reply_offer	80	static
+dhcpd.c:299:7:allocate_new_ipaddr	16	static
+dhcpd.c:405:5:dhcpd_arp_check	80	static
+dhcpd.c:587:1:handle_dhcpd	128	static
+dhcpd.c:669:1:dhcpd_init	64	static
+dhcpd.c:720:6:udp_appcall	0	static

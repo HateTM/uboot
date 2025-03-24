@@ -1,0 +1,14 @@
+mtk_spim.c:606:12:mtk_spim_adjust_op_size	0	static
+mtk_spim.c:677:12:mtk_spim_set_speed	0	static
+mtk_spim.c:344:13:mtk_spim_supports_op	0	static
+mtk_spim.c:433:12:mtk_spim_exec_op	80	static
+mtk_spim.c:648:12:mtk_spim_probe	48	static
+mtk_spim.c:682:12:mtk_spim_set_mode	0	static
+completion.h:132:12:wait_for_completion_interruptible	0	static
+completion.h:136:12:wait_for_completion_killable	0	static
+completion.h:140:22:wait_for_completion_timeout	0	static
+completion.h:145:22:wait_for_completion_io_timeout	0	static
+completion.h:150:13:wait_for_completion_interruptible_timeout	0	static
+completion.h:155:13:wait_for_completion_killable_timeout	0	static
+completion.h:160:13:try_wait_for_completion	0	static
+completion.h:164:13:completion_done	0	static

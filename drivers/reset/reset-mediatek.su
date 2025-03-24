@@ -1,0 +1,6 @@
+reset-mediatek.c:27:12:mediatek_reset_request	0	static
+reset-mediatek.c:49:12:mediatek_reset_deassert	32	static
+reset-mediatek.c:37:12:mediatek_reset_assert	32	static
+reset-mediatek.c:68:12:mediatek_reset_probe	32	static
+reset-mediatek.c:32:12:mediatek_reset_free	0	static
+reset-mediatek.c:82:5:mediatek_reset_bind	64	static

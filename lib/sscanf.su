@@ -1,0 +1,5 @@
+sscanf.c:56:1:str_to_int_convert	48	static
+sscanf.c:197:1:strtouq	64	static
+sscanf.c:162:1:strtoq	64	static
+sscanf.c:362:1:vsscanf	416	static
+sscanf.c:813:5:sscanf	128	static

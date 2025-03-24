@@ -1,0 +1,4 @@
+timer.c:71:1:timer_set	32	static
+timer.c:91:1:timer_reset	0	static
+timer.c:111:1:timer_restart	32	static
+timer.c:128:1:timer_expired	32	static

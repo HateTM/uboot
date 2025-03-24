@@ -1,0 +1,14 @@
+serial_mtk.c:195:12:mtk_serial_pending	32	static
+serial_mtk.c:181:12:mtk_serial_putc	32	static
+serial_mtk.c:188:12:mtk_serial_getc	16	static
+serial_mtk.c:202:12:mtk_serial_probe	16	static
+serial_mtk.c:80:13:_mtk_serial_setbrg	64	static
+serial_mtk.c:172:12:mtk_serial_setbrg	32	static
+serial_mtk.c:215:12:mtk_serial_of_to_plat	48	static
+serial_mtk.c:450:1:printch	0	static
+serial_mtk.c:450:1:printascii	0	static
+serial_mtk.c:450:1:printhex2	0	static
+serial_mtk.c:450:1:printhex4	0	static
+serial_mtk.c:450:1:printhex8	0	static
+serial_mtk.c:450:1:printdec	32	static
+serial_mtk.c:450:1:debug_uart_init	80	static

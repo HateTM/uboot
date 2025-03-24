@@ -1,0 +1,1 @@
+cmd_disk/built-in.o :=  rm -f disk/built-in.o; /home/hatetm/temp_data/sdk/openwrt-21.02/staging_dir/toolchain-aarch64_cortex-a53_gcc-8.4.0_musl/bin/aarch64-openwrt-linux-musl-ar cDPrsT disk/built-in.o disk/part.o disk/part_dos.o disk/part_efi.o

@@ -1,0 +1,14 @@
+sysProductInfo.c:202:1:_delTailSpace	32	static
+sysProductInfo.c:165:1:_delLeadingSpace	32	static
+sysProductInfo.c:300:1:_strToStr	48	static
+sysProductInfo.c:330:1:_hexStrToUL	48	static
+sysProductInfo.c:378:1:_strToProductVer	48	static
+sysProductInfo.c:247:1:_charReplace.part.0	48	static
+sysProductInfo.c:284:1:_strToKey.constprop	32	static
+sysProductInfo.c:119:1:_makeSubStrByChar.constprop	64	static
+sysProductInfo.c:448:1:sysmgr_proinfo_buildStruct	576	static
+sysProductInfo.c:608:1:sysmgr_proinfo_buildStructByEnv	96	static
+sysProductInfo.c:665:6:sysmgr_proinfo_structShow	48	static
+sysProductInfo.c:688:22:sysmgr_getProductInfo	32	static
+sysProductInfo.c:707:1:sysmgr_cfg_getProductInfoFromEnv	16	static
+sysProductInfo.c:724:1:sysmgr_cfg_checkSupportList	1024	static

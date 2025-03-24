@@ -1,0 +1,4 @@
+pci.c:50:13:pci_show_regs	96	static
+pci.c:231:13:pci_header_show	48	static
+pci.c:384:12:pci_cfg_modify.isra.0	144	static
+pci.c:480:12:do_pci	192	static

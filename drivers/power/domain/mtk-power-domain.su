@@ -1,0 +1,5 @@
+mtk-power-domain.c:320:12:scpsys_power_free	0	static
+mtk-power-domain.c:309:12:scpsys_power_request	32	static
+mtk-power-domain.c:262:12:scpsys_power_off	96	static
+mtk-power-domain.c:213:12:scpsys_power_on	96	static
+mtk-power-domain.c:346:12:mtk_power_domain_probe	144	static

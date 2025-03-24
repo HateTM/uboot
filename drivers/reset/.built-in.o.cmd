@@ -1,0 +1,1 @@
+cmd_drivers/reset/built-in.o :=  rm -f drivers/reset/built-in.o; /home/hatetm/temp_data/sdk/openwrt-21.02/staging_dir/toolchain-aarch64_cortex-a53_gcc-8.4.0_musl/bin/aarch64-openwrt-linux-musl-ar cDPrsT drivers/reset/built-in.o drivers/reset/reset-uclass.o drivers/reset/reset-mediatek.o

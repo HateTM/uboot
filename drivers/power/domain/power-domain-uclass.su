@@ -1,0 +1,8 @@
+power-domain-uclass.c:36:5:power_domain_get_by_index	128	static
+power-domain-uclass.c:116:12:dev_power_domain_ctrl	96	static
+power-domain-uclass.c:83:5:power_domain_get	0	static
+power-domain-uclass.c:88:5:power_domain_free	0	static
+power-domain-uclass.c:97:5:power_domain_on	0	static
+power-domain-uclass.c:106:5:power_domain_off	0	static
+power-domain-uclass.c:156:5:dev_power_domain_on	0	static
+power-domain-uclass.c:161:5:dev_power_domain_off	0	static

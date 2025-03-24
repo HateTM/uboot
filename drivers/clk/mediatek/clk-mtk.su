@@ -1,0 +1,14 @@
+clk-mtk.c:247:12:mtk_apmixedsys_disable	32	static
+clk-mtk.c:200:14:mtk_apmixedsys_get_rate	32	static
+clk-mtk.c:452:12:mtk_clk_mux_disable	32	static
+clk-mtk.c:419:12:mtk_clk_mux_enable	32	static
+clk-mtk.c:478:12:mtk_common_clk_set_parent	32	static
+clk-mtk.c:518:12:mtk_clk_gate_disable	32	static
+clk-mtk.c:491:12:mtk_clk_gate_enable	32	static
+clk-mtk.c:218:12:mtk_apmixedsys_enable	32	static
+clk-mtk.c:381:14:mtk_topckgen_get_rate	80	static
+clk-mtk.c:398:14:mtk_infrasys_get_rate	80	static
+clk-mtk.c:545:14:mtk_clk_gate_get_rate	80	static
+clk-mtk.c:189:14:mtk_apmixedsys_set_rate	48	static
+clk-mtk.c:580:5:mtk_common_clk_init	64	static
+clk-mtk.c:605:5:mtk_common_clk_gate_init	64	static

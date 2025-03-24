@@ -1,0 +1,1 @@
+cmd_drivers/spi/built-in.o :=  rm -f drivers/spi/built-in.o; /home/hatetm/temp_data/sdk/openwrt-21.02/staging_dir/toolchain-aarch64_cortex-a53_gcc-8.4.0_musl/bin/aarch64-openwrt-linux-musl-ar cDPrsT drivers/spi/built-in.o drivers/spi/spi-uclass.o drivers/spi/spi-mem.o drivers/spi/mtk_spim.o

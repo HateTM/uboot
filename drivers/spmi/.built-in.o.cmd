@@ -1,0 +1,1 @@
+cmd_drivers/spmi/built-in.o :=  rm -f drivers/spmi/built-in.o; /home/hatetm/temp_data/sdk/openwrt-21.02/staging_dir/toolchain-aarch64_cortex-a53_gcc-8.4.0_musl/bin/aarch64-openwrt-linux-musl-ar cDPrsT drivers/spmi/built-in.o

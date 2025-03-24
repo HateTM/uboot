@@ -1,0 +1,16 @@
+uip.c:291:1:chksum	0	static
+uip.c:340:1:upper_layer_chksum	16	static
+uip.c:190:6:uip_setipid	0	static
+uip.c:260:1:uip_add32	0	static
+uip.c:698:1:uip_add_rcv_nxt	16	static
+uip.c:322:1:uip_chksum	16	static
+uip.c:329:1:uip_ipchksum	0	static
+uip.c:375:1:uip_tcpchksum	0	static
+uip.c:382:1:uip_udpchksum	0	static
+uip.c:390:1:uip_init	0	static
+uip.c:418:1:uip_connect	0	static
+uip.c:484:1:uip_udp_new	48	static
+uip.c:529:1:uip_unlisten	0	static
+uip.c:540:1:uip_listen	0	static
+uip.c:709:1:uip_process	96	static
+uip.c:1956:1:uip_send	0	static

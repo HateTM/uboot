@@ -1,0 +1,5 @@
+mtd.c:34:12:env_mtd_init	0	static
+mtd.c:65:25:env_mtd_get_dev	32	static
+mtd.c:85:12:mtd_io_skip_bad.constprop	128	static
+mtd.c:230:12:env_mtd_load	131184	static
+mtd.c:174:12:env_mtd_save	131280	static

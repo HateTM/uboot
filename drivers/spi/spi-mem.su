@@ -1,0 +1,6 @@
+spi-mem.c:148:13:spi_mem_check_buswidth	0	static
+spi-mem.c:170:6:spi_mem_dtr_supports_op	0	static
+spi-mem.c:190:6:spi_mem_default_supports_op	0	static
+spi-mem.c:218:6:spi_mem_supports_op	0	static
+spi-mem.c:243:5:spi_mem_exec_op	80	dynamic
+spi-mem.c:462:5:spi_mem_adjust_op_size	0	static

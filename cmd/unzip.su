@@ -1,0 +1,2 @@
+unzip.c:13:12:do_unzip	64	static
+unzip.c:46:12:do_gzwrite	96	static

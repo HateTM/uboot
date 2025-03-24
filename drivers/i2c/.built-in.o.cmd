@@ -1,0 +1,1 @@
+cmd_drivers/i2c/built-in.o :=  rm -f drivers/i2c/built-in.o; /home/hatetm/temp_data/sdk/openwrt-21.02/staging_dir/toolchain-aarch64_cortex-a53_gcc-8.4.0_musl/bin/aarch64-openwrt-linux-musl-ar cDPrsT drivers/i2c/built-in.o drivers/i2c/i2c-uclass.o drivers/i2c/i2c-gpio.o drivers/i2c/mt_i2c.o

@@ -1,0 +1,1 @@
+cmd_tools/env/lib.a := rm -f tools/env/lib.a; /home/hatetm/temp_data/sdk/openwrt-21.02/staging_dir/toolchain-aarch64_cortex-a53_gcc-8.4.0_musl/bin/aarch64-openwrt-linux-musl-ar cDPrsT tools/env/lib.a tools/env/crc32.o tools/env/ctype.o tools/env/env_attr.o tools/env/env_flags.o tools/env/fw_env.o tools/env/linux_string.o

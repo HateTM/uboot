@@ -1,0 +1,6 @@
+micron.c:51:12:micron_8_ooblayout_ecc	0	static
+micron.c:63:12:micron_8_ooblayout_free	0	static
+micron.c:95:12:micron_8_ecc_get_status	0	static
+micron.c:81:12:micron_select_target	96	static
+micron.c:237:12:micron_spinand_init	0	static
+micron.c:217:12:micron_spinand_detect	16	static
