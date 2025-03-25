@@ -1,6 +1,0 @@
-boot_helper.c:21:5:boot_from_mem	80	static
-boot_helper.c:52:12:_boot_from_mmc	48	static
-boot_helper.c:93:5:boot_from_mmc_generic	32	static
-boot_helper.c:105:5:boot_from_mmc_partition	224	static
-boot_helper.c:125:5:boot_from_mtd	32	static
-boot_helper.c:169:5:boot_from_snor	32	static

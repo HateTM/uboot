@@ -1,1 +1,0 @@
-cmd_arch/arm/mach-mediatek/built-in.o :=  rm -f arch/arm/mach-mediatek/built-in.o; /home/hatetm/temp_data/sdk/openwrt-21.02/staging_dir/toolchain-aarch64_cortex-a53_gcc-8.4.0_musl/bin/aarch64-openwrt-linux-musl-ar cDPrsT arch/arm/mach-mediatek/built-in.o arch/arm/mach-mediatek/cpu.o arch/arm/mach-mediatek/mt7986/built-in.o

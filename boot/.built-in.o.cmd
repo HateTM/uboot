@@ -1,1 +1,0 @@
-cmd_boot/built-in.o :=  rm -f boot/built-in.o; /home/hatetm/temp_data/sdk/openwrt-21.02/staging_dir/toolchain-aarch64_cortex-a53_gcc-8.4.0_musl/bin/aarch64-openwrt-linux-musl-ar cDPrsT boot/built-in.o boot/bootm.o boot/bootm_os.o boot/image.o boot/image-board.o boot/image-fdt.o boot/image-fit.o

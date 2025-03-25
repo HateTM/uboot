@@ -1,8 +1,0 @@
-.mt7988-fpga.dtb.pre.o: arch/arm/dts/.mt7988-fpga.dtb.pre.tmp \
- include/linux/kconfig.h include/generated/autoconf.h \
- arch/arm/dts/mt7988-fpga.dtsi \
- arch/arm/dts/include/dt-bindings/interrupt-controller/irq.h \
- arch/arm/dts/include/dt-bindings/interrupt-controller/arm-gic.h \
- arch/arm/dts/include/dt-bindings/clock/mt7986-clk.h \
- arch/arm/dts/include/dt-bindings/reset/mt7629-reset.h \
- arch/arm/dts/include/dt-bindings/gpio/gpio.h
