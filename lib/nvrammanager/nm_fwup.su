@@ -1,6 +1,0 @@
-nm_fwup.c:395:12:handle_fw_cloud	320	static
-nm_fwup.c:188:5:nm_setBootIdx	32	static
-nm_fwup.c:286:8:nm_checkPartition	48	static
-nm_fwup.c:321:5:nm_buildUpgradeStruct	80	static
-nm_fwup.c:348:8:nm_upgradeFwupFile	128	static
-nm_fwup.c:420:5:nm_upgradeFirmware	64	static

@@ -1,5 +1,0 @@
-uip_arp.c:163:1:uip_arp_update.constprop	48	static
-uip_arp.c:130:1:uip_arp_init	48	static
-uip_arp.c:147:1:uip_arp_timer	48	static
-uip_arp.c:283:1:uip_arp_arpin	80	static
-uip_arp.c:373:1:uip_arp_out	80	static

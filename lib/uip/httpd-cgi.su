@@ -1,8 +1,0 @@
-httpd-cgi.c:69:1:nullfunction	0	static
-httpd-cgi.c:191:1:net_stats	48	static
-httpd-cgi.c:168:1:tcp_stats	32	static
-httpd-cgi.c:183:1:generate_net_stats	16	static
-httpd-cgi.c:146:1:generate_tcp_stats	64	static
-httpd-cgi.c:97:1:file_stats	32	static
-httpd-cgi.c:90:1:generate_file_stats	32	static
-httpd-cgi.c:76:1:httpd_cgi	48	static

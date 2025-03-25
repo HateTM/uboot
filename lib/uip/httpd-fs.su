@@ -1,3 +1,0 @@
-httpd-fs.c:75:1:httpd_fs_open	0	static
-httpd-fs.c:103:1:httpd_fs_init	0	static
-httpd-fs.c:114:7:httpd_fs_count	0	static

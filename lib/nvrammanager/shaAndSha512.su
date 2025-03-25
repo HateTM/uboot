@@ -1,2 +1,0 @@
-shaAndSha512.c:92:13:SHA_Bytes	480	static
-shaAndSha512.c:173:6:RSA_SHA_Simple	208	static

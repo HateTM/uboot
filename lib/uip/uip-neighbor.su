@@ -1,5 +1,0 @@
-uip-neighbor.c:64:1:uip_neighbor_init	0	static
-uip-neighbor.c:74:1:uip_neighbor_periodic	0	static
-uip-neighbor.c:86:1:uip_neighbor_add	32	static
-uip-neighbor.c:134:1:uip_neighbor_update	0	static
-uip-neighbor.c:145:1:uip_neighbor_lookup	0	static

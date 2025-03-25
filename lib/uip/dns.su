@@ -1,5 +1,0 @@
-dns.c:40:6:dump	64	static
-dns.c:65:5:getDNSReqLen	0	static
-dns.c:98:6:dns_init	32	static
-dns.c:126:6:create_dns_msg	64	static
-dns.c:171:6:handle_dns	0	static

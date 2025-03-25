@@ -1,1 +1,0 @@
-cmd_net/built-in.o :=  rm -f net/built-in.o; /home/hatetm/temp_data/sdk/openwrt-21.02/staging_dir/toolchain-aarch64_cortex-a53_gcc-8.4.0_musl/bin/aarch64-openwrt-linux-musl-ar cDPrsT net/built-in.o net/arp.o net/bootp.o net/eth-uclass.o net/eth_common.o net/net.o net/nfs.o net/ping.o net/tftp.o
