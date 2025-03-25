@@ -1,5 +1,0 @@
-cli_simple.c:26:5:cli_simple_parse_line	32	static
-cli_simple.c:63:5:cli_simple_process_macros	1088	static
-cli_simple.c:183:5:cli_simple_run_command	2368	static
-cli_simple.c:269:6:cli_simple_loop	64	static
-cli_simple.c:318:5:cli_simple_run_command_list	32	static

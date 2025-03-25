@@ -1,4 +1,0 @@
-esmt.c:32:12:f50l1g41lb_ooblayout_ecc	0	static
-esmt.c:38:12:f50l1g41lb_ooblayout_free	0	static
-esmt.c:112:12:esmt_spinand_detect	16	static
-esmt.c:65:12:f50l1g41lb_ecc_get_status	96	static

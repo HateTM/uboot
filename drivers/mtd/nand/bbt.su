@@ -1,5 +1,0 @@
-bbt.c:28:5:nanddev_bbt_init	32	static
-bbt.c:49:6:nanddev_bbt_cleanup	0	static
-bbt.c:64:5:nanddev_bbt_update	0	static
-bbt.c:78:5:nanddev_bbt_get_block_status	0	static
-bbt.c:111:5:nanddev_bbt_set_block_status	0	static

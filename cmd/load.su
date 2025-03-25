@@ -1,8 +1,0 @@
-load.c:648:13:bin_data_init	0	static
-load.c:989:12:getcxmodem	16	static
-load.c:994:14:load_serial_ymodem	1104	static
-load.c:666:13:bin_data_char	0	static
-load.c:606:13:s1_sendpacket.constprop	32	static
-load.c:438:12:do_load_serial_bin	176	static
-load.c:139:14:load_serial	1328	static
-load.c:49:12:do_load_serial	32	static

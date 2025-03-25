@@ -1,7 +1,0 @@
-net.c:194:12:netboot_common	96	static
-net.c:23:12:do_bootp	0	static
-net.c:37:5:do_tftpb	0	static
-net.c:114:12:do_nfs	0	static
-net.c:505:12:do_net	48	static
-net.c:486:12:do_net_list	80	static
-net.c:290:12:do_ping	32	static

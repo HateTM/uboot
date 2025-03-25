@@ -1,6 +1,0 @@
-clk-mt7986.c:545:12:mt7986_fixed_pll_probe	0	static
-clk-mt7986.c:589:12:mt7986_infracfg_probe	0	static
-clk-mt7986.c:550:12:mt7986_topckgen_probe	32	static
-clk-mt7986.c:594:12:mt7986_infracfg_ao_probe	0	static
-clk-mt7986.c:640:12:mt7986_ethsys_probe	0	static
-clk-mt7986.c:646:12:mt7986_ethsys_bind	0	static

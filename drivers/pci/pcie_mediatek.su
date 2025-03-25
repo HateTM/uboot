@@ -1,9 +1,0 @@
-pcie_mediatek.c:165:12:mtk_pcie_write_config	0	static
-pcie_mediatek.c:146:12:mtk_pcie_config_address	48	static
-pcie_mediatek.c:157:12:mtk_pcie_read_config	0	static
-pcie_mediatek.c:635:12:mtk_pcie_probe	128	static
-pcie_mediatek.c:248:30:mtk_pcie_find_port	64	static
-pcie_mediatek.c:682:12:mtk_pcie_probe_v2	128	static
-pcie_mediatek.c:178:12:mtk_pcie_check_cfg_cpld.isra.0	32	static
-pcie_mediatek.c:302:12:mtk_pcie_config_write	48	static
-pcie_mediatek.c:282:12:mtk_pcie_config_read	80	static

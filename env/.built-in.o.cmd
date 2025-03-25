@@ -1,1 +1,0 @@
-cmd_env/built-in.o :=  rm -f env/built-in.o; /home/hatetm/temp_data/sdk/openwrt-21.02/staging_dir/toolchain-aarch64_cortex-a53_gcc-8.4.0_musl/bin/aarch64-openwrt-linux-musl-ar cDPrsT env/built-in.o env/common.o env/env.o env/attr.o env/flags.o env/callback.o env/mtd.o

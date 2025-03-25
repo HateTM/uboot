@@ -1,4 +1,0 @@
-pwm-mtk.c:128:12:mtk_pwm_set_enable	32	static
-pwm-mtk.c:56:13:mtk_pwm_w32	48	static
-pwm-mtk.c:74:12:mtk_pwm_set_config	112	static
-pwm-mtk.c:143:12:mtk_pwm_probe	80	static

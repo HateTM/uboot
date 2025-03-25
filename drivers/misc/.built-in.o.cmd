@@ -1,1 +1,0 @@
-cmd_drivers/misc/built-in.o :=  rm -f drivers/misc/built-in.o; /home/hatetm/temp_data/sdk/openwrt-21.02/staging_dir/toolchain-aarch64_cortex-a53_gcc-8.4.0_musl/bin/aarch64-openwrt-linux-musl-ar cDPrsT drivers/misc/built-in.o

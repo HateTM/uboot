@@ -1,9 +1,0 @@
-gunzip.c:30:7:gzalloc	0	static
-gunzip.c:42:6:gzfree	0	static
-gunzip.c:47:5:gzip_parse_header	16	static
-gunzip.c:87:6:gzwrite_progress_init	0	static
-gunzip.c:93:6:gzwrite_progress	0	static
-gunzip.c:102:6:gzwrite_progress_finish	0	static
-gunzip.c:119:5:gzwrite	256	static
-gunzip.c:278:5:zunzip	208	static
-gunzip.c:75:5:gunzip	48	static

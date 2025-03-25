@@ -1,1 +1,0 @@
-cmd_drivers/pinctrl/mediatek/built-in.o :=  rm -f drivers/pinctrl/mediatek/built-in.o; /home/hatetm/temp_data/sdk/openwrt-21.02/staging_dir/toolchain-aarch64_cortex-a53_gcc-8.4.0_musl/bin/aarch64-openwrt-linux-musl-ar cDPrsT drivers/pinctrl/mediatek/built-in.o drivers/pinctrl/mediatek/pinctrl-mtk-common.o drivers/pinctrl/mediatek/pinctrl-mt7986.o

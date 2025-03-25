@@ -1,1 +1,0 @@
-cmd_drivers/net/phy/built-in.o :=  rm -f drivers/net/phy/built-in.o; /home/hatetm/temp_data/sdk/openwrt-21.02/staging_dir/toolchain-aarch64_cortex-a53_gcc-8.4.0_musl/bin/aarch64-openwrt-linux-musl-ar cDPrsT drivers/net/phy/built-in.o drivers/net/phy/phy.o drivers/net/phy/fixed.o

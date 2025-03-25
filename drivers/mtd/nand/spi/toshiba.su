@@ -1,4 +1,0 @@
-toshiba.c:44:12:tx58cxgxsxraix_ooblayout_ecc	0	static
-toshiba.c:56:12:tx58cxgxsxraix_ooblayout_free	0	static
-toshiba.c:74:12:tx58cxgxsxraix_ecc_get_status	96	static
-toshiba.c:260:12:toshiba_spinand_detect	16	static
