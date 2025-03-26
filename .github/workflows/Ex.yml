@@ -1,10 +1,7 @@
-name: Extract GPL Code
+name: Extract U-Boot
 
 on:
   workflow_dispatch:
-  # Если нужно запускать при пуше в U23:
-  # push:
-  #   branches: [U23]
 
 jobs:
   process-archive:
@@ -16,60 +13,58 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        ref: U23  # Указываем ветку явно
+        ref: main  # Или ваша целевая ветка
         fetch-depth: 0
 
-    # Скачивание архива (без изменений)
-    - name: Download GPL Archive
+    - name: Download Archive
       run: |
         curl -L -o gpl-code.tar.gz "https://static.tp-link.com/upload/gpl-code/2023/202310/20231007/GPL_BE805.tar.gz?_gl=1*1d14vot*_gcl_au*MTU1ODc2MDE2NS4xNzQyNjgzNDcz*_ga*MTkxOTkxNjY4OS4xNzI2NTQ1MjI2*_ga_X5XJFE5K24*MTc0Mjk3NjUwMS4yLjEuMTc0Mjk3NjUzNi4wLjAuMA.."
 
-    # Шаги распаковки и поиска папки (без изменений)
-    - name: Extract and Find Folder
+    - name: Extract and Find U-Boot
       run: |
+        # Распаковка с сохранением структуры
         mkdir -p temp_extract
         tar -xzf gpl-code.tar.gz -C temp_extract
-        TARGET_DIR=$(find temp_extract -type d -name "your_folder_name" | head -n 1)
-        if [ -z "$TARGET_DIR" ]; then
-          echo "❌ Папка не найдена!"
+
+        # Поиск папки uboot (регистрозависимо)
+        echo "Поиск папки uboot в архиве..."
+        UBOOT_PATH=$(find temp_extract -type d -name "uboot" | head -n 1)
+
+        if [ -z "$UBOOT_PATH" ]; then
+          echo "::error::Папка 'uboot' не найдена в архиве!"
           exit 1
         fi
-        mkdir -p gpl-code
-        cp -r "$TARGET_DIR"/* gpl-code/
-        rm -rf temp_extract gpl-code.tar.gz
 
-    # Пушим в ветку U23
-    - name: Commit and Push
-      run: |
-        git config user.name "github-actions"
-        git config user.email "actions@github.com"
+        echo "Найдена папка: $UBOOT_PATH"
         
-        # Проверяем существование ветки
-        if ! git ls-remote --exit-code --heads origin U23; then
-          echo "Создаем ветку U23..."
-          git checkout -b U23
-        else
-          git pull origin U23 --rebase
-        fi
+        # Создаем целевую директорию
+        mkdir -p uboot
         
-        git add gpl-code/
-        git commit -m "Update GPL code"
-        git push origin U23        # Копируем найденную папку
-        mkdir -p gpl-code
-        cp -r "$TARGET_DIR"/* gpl-code/
-
-        # Логируем результат
-        echo "Найдена папка: $TARGET_DIR"
-        echo "Содержимое скопировано в gpl-code/"
-
+        # Копируем с сохранением прав
+        cp -r "$UBOOT_PATH"/* uboot/
+        
+        # Проверка содержимого
+        echo "Скопировано файлов: $(find uboot -type f | wc -l)"
+        
         # Очистка
         rm -rf temp_extract gpl-code.tar.gz
 
-    # Пушим изменения
     - name: Commit and Push
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: main
-        commit_message: "Обновление GPL кода"
-        force: false
+      run: |
+        git config user.name "uboot-updater"
+        git config user.email "actions@github.com"
+        
+        # Обновляемся перед коммитом
+        git pull origin main --rebase
+        
+        # Добавляем только папку uboot
+        git add uboot/
+        
+        # Проверяем изменения
+        if git diff-index --quiet HEAD --; then
+          echo "Нет изменений для коммита"
+          exit 0
+        fi
+
+        git commit -m "Обновление U-Boot от $(date +'%Y-%m-%d')"
+        git push origin main
