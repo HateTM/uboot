@@ -1,0 +1,55 @@
+name: Extract GPL Code
+
+on:
+  workflow_dispatch:
+
+jobs:
+  process-archive:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Скачивание архива
+    - name: Download GPL Archive
+      run: |
+        curl -L -o gpl-code.tar.gz "https://static.tp-link.com/upload/gpl-code/2023/202310/20231007/GPL_BE805.tar.gz?_gl=1*1d14vot*_gcl_au*MTU1ODc2MDE2NS4xNzQyNjgzNDcz*_ga*MTkxOTkxNjY4OS4xNzI2NTQ1MjI2*_ga_X5XJFE5K24*MTc0Mjk3NjUwMS4yLjEuMTc0Mjk3NjUzNi4wLjAuMA.."
+
+    # Распаковка и поиск папки
+    - name: Extract and Find Folder
+      run: |
+        # Распаковываем архив
+        mkdir -p temp_extract
+        tar -xzf gpl-code.tar.gz -C temp_extract
+
+        # Ищем папку по имени (ЗАМЕНИТЕ "your_folder_name" на реальное название)
+        TARGET_DIR=$(find temp_extract -type d -name "uboot" 2>/dev/null | head -n 1)
+
+        # Проверяем, найдена ли папка
+        if [ -z "$TARGET_DIR" ]; then
+          echo "❌ Папка не найдена в архиве!"
+          exit 1
+        fi
+
+        # Копируем найденную папку
+        mkdir -p gpl-code
+        cp -r "$TARGET_DIR"/* gpl-code/
+
+        # Логируем результат
+        echo "Найдена папка: $TARGET_DIR"
+        echo "Содержимое скопировано в gpl-code/"
+
+        # Очистка
+        rm -rf temp_extract gpl-code.tar.gz
+
+    # Пушим изменения
+    - name: Commit and Push
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: main
+        commit_message: "Обновление GPL кода"
+        force: false
