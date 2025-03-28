@@ -36,7 +36,7 @@ static efi_status_t efi_create_current_boot_var(u16 var_name[],
 	u16 *pos;
 
 	boot_current_size = sizeof(boot_current);
-	ret = efi_get_variable_int(L"BootCurrent",
+	ret = efi_get_variable_int(u"BootCurrent",
 				   &efi_global_variable_guid, NULL,
 				   &boot_current_size, &boot_current, NULL);
 	if (ret != EFI_SUCCESS)
@@ -91,4 +91,102 @@ struct efi_device_path *efi_get_dp_from_boot(const efi_guid_t guid)
 err:
 	free(var_value);
 	return NULL;
+}
+
+const struct guid_to_hash_map {
+	efi_guid_t guid;
+	const char algo[32];
+	u32 bits;
+} guid_to_hash[] = {
+	{
+		EFI_CERT_X509_SHA256_GUID,
+		"sha256",
+		SHA256_SUM_LEN * 8,
+	},
+	{
+		EFI_CERT_SHA256_GUID,
+		"sha256",
+		SHA256_SUM_LEN * 8,
+	},
+	{
+		EFI_CERT_X509_SHA384_GUID,
+		"sha384",
+		SHA384_SUM_LEN * 8,
+	},
+	{
+		EFI_CERT_X509_SHA512_GUID,
+		"sha512",
+		SHA512_SUM_LEN * 8,
+	},
+};
+
+#define MAX_GUID_TO_HASH_COUNT ARRAY_SIZE(guid_to_hash)
+
+/** guid_to_sha_str - return the sha string e.g "sha256" for a given guid
+ *                    used on EFI security databases
+ *
+ * @guid: guid to check
+ *
+ * Return: len or 0 if no match is found
+ */
+const char *guid_to_sha_str(const efi_guid_t *guid)
+{
+	size_t i;
+
+	for (i = 0; i < MAX_GUID_TO_HASH_COUNT; i++) {
+		if (!guidcmp(guid, &guid_to_hash[i].guid))
+			return guid_to_hash[i].algo;
+	}
+
+	return NULL;
+}
+
+/** algo_to_len - return the sha size in bytes for a given string
+ *
+ * @algo: string indicating hashing algorithm to check
+ *
+ * Return: length of hash in bytes or 0 if no match is found
+ */
+int algo_to_len(const char *algo)
+{
+	size_t i;
+
+	for (i = 0; i < MAX_GUID_TO_HASH_COUNT; i++) {
+		if (!strcmp(algo, guid_to_hash[i].algo))
+			return guid_to_hash[i].bits / 8;
+	}
+
+	return 0;
+}
+
+/** efi_link_dev - link the efi_handle_t and udevice
+ *
+ * @handle:	efi handle to associate with udevice
+ * @dev:	udevice to associate with efi handle
+ *
+ * Return:	0 on success, negative on failure
+ */
+int efi_link_dev(efi_handle_t handle, struct udevice *dev)
+{
+	handle->dev = dev;
+	return dev_tag_set_ptr(dev, DM_TAG_EFI, handle);
+}
+
+/**
+ * efi_unlink_dev() - unlink udevice and handle
+ *
+ * @handle:	EFI handle to unlink
+ *
+ * Return:	0 on success, negative on failure
+ */
+int efi_unlink_dev(efi_handle_t handle)
+{
+	int ret;
+
+	ret = dev_tag_del(handle->dev, DM_TAG_EFI);
+	if (ret)
+		return ret;
+	handle->dev = NULL;
+
+	return 0;
 }

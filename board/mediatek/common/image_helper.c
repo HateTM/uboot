@@ -66,7 +66,8 @@ struct ubi_ec_hdr {
  * @param blocksize: blocksize for padding
  * @param ri: on success storing the rootfs information
  *
- * @return 0 if found, -ENODEV if not found, -E2BIG if data corruption
+ * @return 0 if found, -ENODEV if not found, -E2BIG if data corruption,
+ *                     -ENOENT is no extra data after kernel
  */
 static int find_rootfs_ram(const void *data, size_t size, u32 trailing,
 			   u32 blocksize,struct rootfs_info *ri)
@@ -76,6 +77,9 @@ static int find_rootfs_ram(const void *data, size_t size, u32 trailing,
 	uintptr_t offset;
 
 	debug("%s: data = 0x%p, end = 0x%p\n", __func__, data, data + size);
+
+	if (size < sizeof(sb))
+		return -ENOENT;
 
 	/*
 	 * For the first round, the search offset will not be aligned to
@@ -111,7 +115,7 @@ static int find_rootfs_ram(const void *data, size_t size, u32 trailing,
 		ri->padding_size = offset;
 		ri->size = sb.bytes_used;
 
-		debug("%s: found at 0x%zx, size = 0x%llx\n", __func__, offset,
+		debug("%s: found at 0x%lx, size = 0x%llx\n", __func__, offset,
 		      sb.bytes_used);
 
 		return 0;
@@ -189,7 +193,7 @@ static int parse_image_ubi1(const void *data, size_t size, u32 trailing,
 			ii->type = IMAGE_UBI1;
 			ii->padding_size = offset;
 
-			debug("%s: kernel size = 0x%x, padding = 0x%zx\n",
+			debug("%s: kernel size = 0x%x, padding = 0x%lx\n",
 			      __func__, ii->kernel_size, offset);
 
 			debug("%s: UBI size = 0x%x, marker size = 0x%x\n",
@@ -306,6 +310,17 @@ int parse_image_ram(const void *data, size_t size, u32 blocksize,
 
 		debug("%s: squashfs size = 0x%llx, marker size = 0x%x\n",
 		      __func__, ri.size, ii->marker_size);
+
+		return 0;
+	} else if (ret == -ENOENT) {
+		/* Raw image detected (Kernel only) */
+		ii->type = IMAGE_RAW;
+		ii->padding_size = size - ii->kernel_size;
+		ii->rootfs_size = 0;
+		ii->marker_size = 0;
+
+		debug("%s: kernel size = 0x%x, padding = 0x%x\n",
+		      __func__, ii->kernel_size, ri.padding_size);
 
 		return 0;
 	}

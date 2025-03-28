@@ -474,7 +474,7 @@ int  nm_upgradeFirmware(char *buf, unsigned int size);
 void handle_upfile(struct httpd_state *s)
 {
 	char *start = NULL;
-	int retval = 0;
+	//int retval = 0;
 
 	HTTPD_INFO("in handle_upfile, package len is %d\n", uip_len);
 
@@ -564,7 +564,7 @@ void handle_upfile(struct httpd_state *s)
 
 void handle_update(struct httpd_state *s)
 {
-	int retval = 0;
+	//int retval = 0;
 	
 	g_update_retval = nm_upgradeFirmware((char *)UPFILE_BUFFER_ADDRESS, g_uinfo.upfile_count);
 	
@@ -745,7 +745,7 @@ void NetReceiveHttpd(volatile uchar *inpkt, int len)
 
 int NetLoopHttpd(void)
 {
-	struct bd_info *bd = gd->bd;
+	//struct bd_info *bd = gd->bd;
 	int ret = -1;
 	int try = 0;
 	int ip_a = 0, ip_b = 0, ip_c = 0, ip_d = 0;

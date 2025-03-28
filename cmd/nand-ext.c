@@ -739,7 +739,7 @@ static int do_nand_io_normal(int argc, char *const argv[])
 		return CMD_RET_FAILURE;
 	}
 
-	printf("%s from 0x%llx to 0x%llx, size 0x%lx ...\n",
+	printf("%s from 0x%llx to 0x%llx, size 0x%zx ...\n",
 	       read ? "Reading" : "Writing", off, off + size - 1, size);
 
 	while (size && off < mtd->size) {
@@ -815,7 +815,7 @@ static int do_nand_io_normal(int argc, char *const argv[])
 		goto out;
 	}
 
-	printf("0x%lx byte%s remained for %s\n", size, size > 1 ? "s" : "",
+	printf("0x%zx byte%s remained for %s\n", size, size > 1 ? "s" : "",
 	       read ? "read" : "write");
 	goto err_out;
 

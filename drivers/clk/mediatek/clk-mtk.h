@@ -11,6 +11,9 @@
 #define CLK_XTAL			0
 #define MHZ				(1000 * 1000)
 
+/* flags in struct mtk_clk_tree */
+
+/* clk id == 0 doesn't mean it's xtal clk */
 #define CLK_BYPASS_XTAL			BIT(0)
 
 #define HAVE_RST_BAR			BIT(0)
@@ -26,7 +29,8 @@
 #define CLK_PARENT_APMIXED		BIT(4)
 #define CLK_PARENT_TOPCKGEN		BIT(5)
 #define CLK_PARENT_INFRASYS		BIT(6)
-#define CLK_PARENT_MASK			GENMASK(6, 4)
+#define CLK_PARENT_XTAL			BIT(7)
+#define CLK_PARENT_MASK			GENMASK(7, 4)
 
 #define ETHSYS_HIFSYS_RST_CTRL_OFS	0x34
 

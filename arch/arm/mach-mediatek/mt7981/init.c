@@ -1,37 +1,20 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (C) 2020 MediaTek Inc.
+ * Copyright (C) 2022 MediaTek Inc.
  * Author: Sam Shih <sam.shih@mediatek.com>
  */
 
-#include <common.h>
-#include <fdtdec.h>
-#include <asm/armv8/mmu.h>
 #include <init.h>
+#include <asm/armv8/mmu.h>
 #include <asm/system.h>
 #include <asm/global_data.h>
-
-#ifdef CONFIG_DEBUG_UART
-#include <debug_uart.h>
-#endif
+#include <linux/sizes.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
-int print_cpuinfo(void)
-{
-	printf("CPU:   MediaTek MT7981\n");
-	return 0;
-}
-
 int dram_init(void)
 {
-	int ret;
-	/* get memory base and max size from DT */
-	ret = fdtdec_setup_mem_size_base();
-	if (ret)
-		return ret;
-	/* detect real dram size with get_ram_size() */
-	gd->ram_size = get_ram_size((void *)CONFIG_SYS_SDRAM_BASE, gd->ram_size);
+	gd->ram_size = get_ram_size((void *)CONFIG_SYS_SDRAM_BASE, SZ_2G);
 
 	return 0;
 }

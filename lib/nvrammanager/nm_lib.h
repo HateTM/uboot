@@ -45,6 +45,9 @@ extern "C"{
 
 
 /* ========= Global Configure Parameters ================== */
+#ifdef CONFIG_NM_FLASH_SIZE
+#define NM_FLASH_SIZE CONFIG_NM_FLASH_SIZE
+#endif
 #ifndef NM_FLASH_SIZE
 #define NM_FLASH_SIZE 0x2000000
 #endif

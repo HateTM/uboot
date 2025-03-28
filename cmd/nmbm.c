@@ -162,9 +162,9 @@ static int do_nmbm_mtd_boot(struct cmd_tbl *cmdtp, struct mtd_info *mtd,
 #endif
 	}
 
-	ret = mtd_read(mtd, off, sizeof(image_header_t), &retlen,
+	ret = mtd_read(mtd, off, sizeof(struct legacy_img_hdr), &retlen,
 		       (void *)loadaddr);
-	if (ret || retlen != sizeof(image_header_t)) {
+	if (ret || retlen != sizeof(struct legacy_img_hdr)) {
 		printf("Failed to read NMBM at offset 0x%08llx\n", off);
 		return CMD_RET_FAILURE;
 	}
@@ -172,7 +172,7 @@ static int do_nmbm_mtd_boot(struct cmd_tbl *cmdtp, struct mtd_info *mtd,
 	switch (genimg_get_format((void *)loadaddr)) {
 #if defined(CONFIG_LEGACY_IMAGE_FORMAT)
 	case IMAGE_FORMAT_LEGACY:
-		size = image_get_image_size((image_header_t *)loadaddr);
+		size = image_get_image_size((struct legacy_img_hdr *)loadaddr);
 		image_name = "legacy";
 		break;
 #endif

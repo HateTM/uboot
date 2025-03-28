@@ -15,6 +15,10 @@
 #include <env.h>
 #include <image.h>
 #include <net.h>
+#include <part.h>
+#include <dm.h>
+#include <mmc.h>
+#include <fs.h>
 #include <vsprintf.h>
 #include <xyzModem.h>
 #include <linux/stringify.h>
@@ -271,6 +275,249 @@ static int load_srecord(ulong addr, size_t *data_size, const char *env_name)
 }
 #endif
 
+#if defined(CONFIG_BLK) && defined(CONFIG_PARTITIONS) && defined(CONFIG_FS_FAT)
+static const char *part_get_name(int part_type)
+{
+	struct part_driver *drv =
+		ll_entry_start(struct part_driver, part_driver);
+	const int n_ents = ll_entry_count(struct part_driver, part_driver);
+	struct part_driver *entry;
+
+	for (entry = drv; entry != drv + n_ents; entry++) {
+		if (part_type == entry->part_type)
+			return entry->name;
+	}
+
+	return "Unknown";
+}
+
+static void print_size_str(char *str, uint64_t size)
+{
+	uint32_t integer, rem, decimal;
+	const char *unit;
+
+	if (size >= SZ_1G) {
+		integer = size / SZ_1G;
+		rem = (size % SZ_1G + SZ_1M / 2) / SZ_1M;
+		unit = "G";
+	} else if (size >= SZ_1M) {
+		integer = size / SZ_1M;
+		rem = (size % SZ_1M + SZ_1K / 2) / SZ_1K;
+		unit = "M";
+	} else if (size >= SZ_1K) {
+		integer = size / SZ_1K;
+		rem = size % SZ_1K;
+		unit = "K";
+	} else {
+		integer = size;
+		rem = 0;
+		unit = "";
+	}
+
+	decimal = rem * 100 / 1024;
+
+	if (!decimal) {
+		/* XX.00 */
+		sprintf(str, "%u%sB", integer, unit);
+		return;
+	}
+
+	if (!(decimal % 10)) {
+		/* XX.Y0 */
+		sprintf(str, "%u.%u%sB", integer, decimal / 10, unit);
+		return;
+	}
+
+	/* XX.YY / XX.0Y */
+	sprintf(str, "%u.%02u%sB", integer, decimal, unit);
+}
+
+static int __maybe_unused load_from_blkdev(struct blk_desc *bd, size_t addr,
+					   size_t *data_size,
+					   const char *env_name)
+{
+	char input_buffer[CONFIG_SYS_CBSIZE + 1], start_str[16], size_str[16];
+	u32 i, nparts = 0, upartidx = 1;
+	loff_t filesize, readsize = 0;
+	struct disk_partition dpart;
+	char *endp, *filename;
+	int ret;
+
+#ifdef CONFIG_BLOCK_CACHE
+	blkcache_invalidate(bd->uclass_id, bd->devnum);
+#endif
+
+	part_init(bd);
+
+	if (bd->part_type == PART_TYPE_UNKNOWN) {
+		cprintln(ERROR, "*** Unrecognized partition type! ***");
+		return CMD_RET_FAILURE;
+	}
+
+	printf("Partition table type: %s\n", part_get_name(bd->part_type));
+
+	printf("\nAvailable partition(s):\n\n");
+
+#ifdef CONFIG_DOS_PARTITION
+	if (bd->part_type == PART_TYPE_DOS)
+#if CONFIG_IS_ENABLED(PARTITION_UUIDS)
+		printf("    #  | Offset   | Size     | UUID        | Type\n");
+#else
+		printf("    #  | Offset   | Size     | Type\n");
+#endif
+	else
+#endif /* CONFIG_DOS_PARTITION */
+	if (bd->part_type == PART_TYPE_EFI)
+#if CONFIG_IS_ENABLED(PARTITION_UUIDS)
+		printf("    #  | Offset   | Size     | UUID                                 | Name\n");
+#else
+		printf("    #  | Offset   | Size     | Name\n");
+#endif
+	else
+		printf("    #  | Offset   | Size\n");
+
+	i = 1;
+	while (true) {
+		ret = part_get_info(bd, i, &dpart);
+		if (ret)
+			break;
+
+		print_size_str(start_str, (uint64_t)dpart.start * dpart.blksz);
+		print_size_str(size_str, (uint64_t)dpart.size * dpart.blksz);
+
+#ifdef CONFIG_DOS_PARTITION
+		if (bd->part_type == PART_TYPE_DOS) {
+#if CONFIG_IS_ENABLED(PARTITION_UUIDS)
+			printf("    %-2u   %-8s   %-8s   %-11s   %02X   %s\n",
+			       i, start_str, size_str, dpart.uuid,
+			       dpart.sys_ind, dpart.bootable ? "(Active)" : "");
+#else
+			printf("    %-2u   %-8s   %-8s   %02X   %s\n",
+			       i, start_str, size_str, dpart.sys_ind,
+			       dpart.bootable ? "(Active)" : "");
+#endif
+		} else
+#endif /* CONFIG_DOS_PARTITION */
+		if (bd->part_type == PART_TYPE_EFI) {
+#if CONFIG_IS_ENABLED(PARTITION_UUIDS)
+			printf("    %-2u   %-8s   %-8s   %s   %s\n",
+			       i, start_str, size_str, dpart.uuid, dpart.name);
+#else
+			printf("    %-2u   %-8s   %-8s   %s\n",
+			       i, start_str, size_str, dpart.name);
+#endif
+		} else {
+			printf("    %-2u   %-8s   %-8s\n",
+			       i, start_str, size_str);
+		}
+
+		i++;
+		nparts++;
+	}
+
+	printf("\n");
+
+	if (!nparts) {
+		cprintln(ERROR, "*** No partition found! ***");
+		return CMD_RET_FAILURE;
+	}
+
+	if (nparts == 1)
+		goto start_fs_load;
+
+	input_buffer[0] = 0;
+	cli_highlight_input("Select partition:");
+	if (cli_readline_into_buffer(NULL, input_buffer, 0) == -1)
+		return CMD_RET_FAILURE;
+
+	if (!input_buffer[0] || input_buffer[0] == '\r' ||
+	    input_buffer[0] == '\n')
+		goto start_fs_load;
+
+	upartidx = simple_strtoul(input_buffer, &endp, 0);
+	if (*endp || endp == input_buffer || upartidx > nparts) {
+		cprintln(ERROR, "*** Invalid partition index! ***");
+		return CMD_RET_FAILURE;
+	}
+
+start_fs_load:
+	ret = fs_set_blk_dev_with_part(bd, upartidx);
+	if (ret) {
+		cprintln(ERROR, "*** Failed to attach Filesystem! ***");
+		return CMD_RET_FAILURE;
+	}
+
+	printf("Attached to partition %u (%s)\n\n", upartidx,
+	       fs_get_type_name());
+
+	if (env_update(env_name, "", "Input file name:",
+		       input_buffer + 1, sizeof(input_buffer) - 1))
+		return CMD_RET_FAILURE;
+
+	if (input_buffer[1] == '/') {
+		filename = input_buffer + 1;
+	} else {
+		filename = input_buffer;
+		input_buffer[0] = '/';
+	}
+
+	printf("\n");
+
+	ret = fs_size(filename, &filesize);
+	if (ret) {
+		cprintln(ERROR, "*** File '%s' not exist! ***", filename);
+		return CMD_RET_FAILURE;
+	}
+
+	print_size_str(size_str, filesize);
+	printf("File size: %s\n", size_str);
+
+	/* This function must be called before every fs_* APIs */
+	fs_set_blk_dev_with_part(bd, upartidx);
+
+	ret = fs_read(filename, addr, 0, 0, &readsize);
+	if (ret) {
+		cprintln(ERROR, "*** Failed to load file! ***");
+		return CMD_RET_FAILURE;
+	}
+
+	*data_size = readsize;
+	return CMD_RET_SUCCESS;
+}
+#endif
+
+#ifdef CONFIG_MTK_LOAD_FROM_SD
+static int load_sd(ulong addr, size_t *data_size, const char *env_name)
+{
+	struct mmc *mmc;
+	int ret = CMD_RET_FAILURE;
+
+	mmc = find_mmc_device(CONFIG_MTK_SD_DEV_IDX);
+	if (!mmc) {
+		cprintln(ERROR, "*** SD device not found! ***");
+		goto err_out;
+	}
+
+	mmc->has_init = 0;
+
+	ret = mmc_init(mmc);
+	if (ret) {
+		cprintln(ERROR, "*** Failed to initialize SD device! ***");
+		goto err_out;
+	}
+
+	printf("Using device: %s\n", mmc->dev->name);
+
+	ret = load_from_blkdev(mmc_get_blk_desc(mmc), addr, data_size, env_name);
+	if (ret == CMD_RET_SUCCESS)
+		return ret;
+
+err_out:
+	cprintln(ERROR, "*** Operation Aborted! ***");
+	return ret;
+}
+#endif
+
 #ifdef CONFIG_MEDIATEK_LOAD_FROM_RAM
 static int load_ram(ulong addr, size_t *data_size, const char *env_name)
 {
@@ -338,6 +585,12 @@ struct load_method {
 	{
 		.name = "S-Record",
 		.load_func = load_srecord
+	},
+#endif
+#ifdef CONFIG_MTK_LOAD_FROM_SD
+	{
+		.name = "SD card",
+		.load_func = load_sd
 	},
 #endif
 #ifdef CONFIG_MEDIATEK_LOAD_FROM_RAM

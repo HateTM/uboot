@@ -660,7 +660,7 @@ static bool nmbm_erase_block_and_check(struct nmbm_instance *ni, uint32_t ba)
 	addr = ba2addr(ni, ba);
 
 	for (off = 0; off < ni->lower.erasesize; off += ni->lower.writesize) {
-		WATCHDOG_RESET();
+		schedule();
 
 		ret = nmbm_read_phys_page(ni, addr + off, ni->page_cache, NULL,
 					  NMBM_MODE_PLACE_OOB);
@@ -699,7 +699,7 @@ static void nmbm_erase_range(struct nmbm_instance *ni, uint32_t ba,
 	bool success;
 
 	while (ba < limit) {
-		WATCHDOG_RESET();
+		schedule();
 
 		if (nmbm_get_block_state(ni, ba) != BLOCK_ST_GOOD)
 			goto next_block;
@@ -750,7 +750,7 @@ static bool nmbm_write_repeated_data(struct nmbm_instance *ni, uint32_t ba,
 	addr = ba2addr(ni, ba);
 
 	for (off = 0; off < ni->lower.erasesize; off += ni->lower.writesize) {
-		WATCHDOG_RESET();
+		schedule();
 
 		/* Prepare page data. fill 0xff to unused region */
 		memcpy(ni->page_cache, data, size);
@@ -794,7 +794,7 @@ static bool nmbm_write_signature(struct nmbm_instance *ni, uint32_t limit,
 	bool success;
 
 	while (ba > limit) {
-		WATCHDOG_RESET();
+		schedule();
 
 		if (nmbm_get_block_state(ni, ba) != BLOCK_ST_GOOD)
 			goto next_block;
@@ -849,7 +849,7 @@ static int nmbn_read_data(struct nmbm_instance *ni, uint64_t addr, void *data,
 	int ret;
 
 	while (sizeremain) {
-		WATCHDOG_RESET();
+		schedule();
 
 		leading = off & ni->writesize_mask;
 		chunksize = ni->lower.writesize - leading;
@@ -899,7 +899,7 @@ static bool nmbn_write_verify_data(struct nmbm_instance *ni, uint64_t addr,
 	int ret;
 
 	while (sizeremain) {
-		WATCHDOG_RESET();
+		schedule();
 
 		leading = off & ni->writesize_mask;
 		chunksize = ni->lower.writesize - leading;
@@ -955,7 +955,7 @@ static bool nmbm_write_mgmt_range(struct nmbm_instance *ni, uint32_t ba,
 	bool success;
 
 	while (sizeremain && ba < limit) {
-		WATCHDOG_RESET();
+		schedule();
 
 		chunksize = sizeremain;
 		if (chunksize > ni->lower.erasesize)
@@ -1217,7 +1217,7 @@ static bool nmbm_rescue_single_info_table(struct nmbm_instance *ni)
 
 	/* Try to write new info table next to the existing table */
 	while (write_ba >= ni->mapping_blocks_ba) {
-		WATCHDOG_RESET();
+		schedule();
 
 		success = nmbm_write_info_table(ni, write_ba,
 						ni->mapping_blocks_top_ba,
@@ -1336,7 +1336,7 @@ static bool nmbm_rescue_main_info_table(struct nmbm_instance *ni)
 
 	/* Try to write temporary info table into spare unmapped blocks */
 	while (write_ba >= ni->mapping_blocks_ba) {
-		WATCHDOG_RESET();
+		schedule();
 
 		success = nmbm_write_info_table(ni, write_ba,
 						ni->mapping_blocks_top_ba,
@@ -1422,7 +1422,7 @@ static bool nmbm_rescue_main_info_table(struct nmbm_instance *ni)
 
 	/* Write new backup info table. */
 	while (write_ba >= main_table_end_ba) {
-		WATCHDOG_RESET();
+		schedule();
 
 		success = nmbm_write_info_table(ni, write_ba,
 						ni->mapping_blocks_top_ba,
@@ -1811,7 +1811,7 @@ static bool nmbm_try_load_info_table(struct nmbm_instance *ni, uint32_t ba,
 	int ret;
 
 	while (sizeremain && ba < limit) {
-		WATCHDOG_RESET();
+		schedule();
 
 		if (nmbm_get_block_state(ni, ba) != BLOCK_ST_GOOD)
 			goto next_block;
@@ -1904,7 +1904,7 @@ static bool nmbm_search_info_table(struct nmbm_instance *ni, uint32_t ba,
 	bool success;
 
 	while (ba < limit - size2blk(ni, ni->info_table_size)) {
-		WATCHDOG_RESET();
+		schedule();
 
 		success = nmbm_try_load_info_table(ni, ba, table_end_ba,
 						   write_count,
@@ -2116,7 +2116,7 @@ static bool nmbm_find_signature(struct nmbm_instance *ni,
 		limit = block_count - ni->lower.max_reserved_blocks;
 
 	while (ba >= limit) {
-		WATCHDOG_RESET();
+		schedule();
 
 		ba--;
 		addr = ba2addr(ni, ba);
@@ -2130,7 +2130,7 @@ static bool nmbm_find_signature(struct nmbm_instance *ni,
 		 */
 		for (off = 0; off < ni->lower.erasesize;
 		     off += ni->lower.writesize) {
-			WATCHDOG_RESET();
+			schedule();
 
 			ret = nmbn_read_data(ni, addr + off, &sig,
 					     sizeof(sig));
@@ -2502,7 +2502,7 @@ int nmbm_erase_block_range(struct nmbm_instance *ni, uint64_t addr,
 	end_ba = addr2ba(ni, addr + size - 1);
 
 	while (start_ba <= end_ba) {
-		WATCHDOG_RESET();
+		schedule();
 
 		ret = nmbm_erase_logic_block(ni, start_ba);
 		if (ret) {
@@ -2634,7 +2634,7 @@ int nmbm_read_range(struct nmbm_instance *ni, uint64_t addr, size_t size,
 	}
 
 	while (sizeremain) {
-		WATCHDOG_RESET();
+		schedule();
 
 		leading = off & ni->writesize_mask;
 		chunksize = ni->lower.writesize - leading;
@@ -2801,7 +2801,7 @@ int nmbm_write_range(struct nmbm_instance *ni, uint64_t addr, size_t size,
 	}
 
 	while (sizeremain) {
-		WATCHDOG_RESET();
+		schedule();
 
 		leading = off & ni->writesize_mask;
 		chunksize = ni->lower.writesize - leading;

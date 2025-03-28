@@ -2,9 +2,10 @@
 /*
  * Copyright 2010-2011 Calxeda, Inc.
  */
-
 #ifndef __MENU_H__
 #define __MENU_H__
+
+#include <linux/ctype.h>
 
 struct menu;
 
@@ -18,6 +19,8 @@ int menu_get_choice(struct menu *m, void **choice);
 int menu_item_add(struct menu *m, char *item_key, void *item_data);
 int menu_destroy(struct menu *m);
 int menu_default_choice(struct menu *m, void **choice);
+/* Add KEY_CHOICE support */
+int get_choice_char(int index, char *result);
 
 /**
  * menu_show() Show a boot menu
@@ -30,9 +33,33 @@ int menu_default_choice(struct menu *m, void **choice);
  *
  * @bootdelay: Delay to wait before running the default menu option (0 to run
  *		the entry immediately)
- * @return If it returns, it always returns -1 to indicate that the boot should
+ * Return: If it returns, it always returns -1 to indicate that the boot should
  *	be aborted and the command prompt should be provided
  */
 int menu_show(int bootdelay);
 
+struct bootmenu_data {
+	int delay;			/* delay for autoboot */
+	int active;			/* active menu entry */
+	int count;			/* total count of menu entries */
+	struct bootmenu_entry *first;	/* first menu entry */
+	bool last_choiced;
+};
+
+enum bootmenu_key {
+	KEY_NONE = 0,
+	KEY_UP,
+	KEY_DOWN,
+	KEY_SELECT,
+	KEY_QUIT,
+	KEY_CHOICE,
+	KEY_PLUS,
+	KEY_MINUS,
+	KEY_SPACE,
+};
+
+void bootmenu_autoboot_loop(struct bootmenu_data *menu,
+			    enum bootmenu_key *key, int *esc, int *choice);
+void bootmenu_loop(struct bootmenu_data *menu,
+		   enum bootmenu_key *key, int *esc, int *choice);
 #endif /* __MENU_H__ */

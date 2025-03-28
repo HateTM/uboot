@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (c) 2021 MediaTek Inc.
+ * Copyright (c) 2022 MediaTek Inc.
  * Author: Sam Shih <sam.shih@mediatek.com>
  */
 
@@ -18,19 +18,14 @@
 		tick-timer = &timer0;
 	};
 
-	memory@40000000 {
-		device_type = "memory";
-		reg = <0x40000000 0x10000000>;
-	};
-
 	reg_3p3v: regulator-3p3v {
-                  compatible = "regulator-fixed";
-                  regulator-name = "fixed-3.3V";
-                  regulator-min-microvolt = <3300000>;
-                  regulator-max-microvolt = <3300000>;
-                  regulator-boot-on;
-                  regulator-always-on;
-        };
+		  compatible = "regulator-fixed";
+		  regulator-name = "fixed-3.3V";
+		  regulator-min-microvolt = <3300000>;
+		  regulator-max-microvolt = <3300000>;
+		  regulator-boot-on;
+		  regulator-always-on;
+	};
 };
 
 &uart0 {
@@ -100,6 +95,24 @@
 			function = "flash";
 			groups =  "emmc_45";
 		};
+		conf-cmd-dat {
+			pins = "SPI0_CLK", "SPI0_MOSI", "SPI0_MISO",
+				"SPI0_CS",  "SPI0_HOLD", "SPI0_WP",
+				"SPI1_CLK", "SPI1_MOSI", "SPI1_MISO";
+			input-enable;
+			drive-strength = <MTK_DRIVE_4mA>;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
+		};
+		conf-clk {
+			pins = "SPI1_CS";
+			drive-strength = <MTK_DRIVE_6mA>;
+			bias-pull-down = <MTK_PUPD_SET_R1R0_10>;
+		};
+		conf-rst {
+			pins = "PWM0";
+			drive-strength = <MTK_DRIVE_4mA>;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
+		};
 	};
 };
 
@@ -114,13 +127,13 @@
 };
 
 &mmc0 {
-        pinctrl-names = "default";
-        pinctrl-0 = <&mmc0_pins_default>;
-        bus-width = <8>;
-        max-frequency = <52000000>;
-        cap-mmc-highspeed;
-        cap-mmc-hw-reset;
-        vmmc-supply = <&reg_3p3v>;
-        non-removable;
-        status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc0_pins_default>;
+	bus-width = <8>;
+	max-frequency = <52000000>;
+	cap-mmc-highspeed;
+	cap-mmc-hw-reset;
+	vmmc-supply = <&reg_3p3v>;
+	non-removable;
+	status = "okay";
 };

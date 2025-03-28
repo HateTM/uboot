@@ -154,7 +154,7 @@ int nand_spl_load_image(uint32_t offs, unsigned int size, void *dst)
 		return -ENODEV;
 
 	while (sizeremain) {
-		WATCHDOG_RESET();
+		schedule();
 
 		leading = off & writesize_mask;
 		chunksize = cinfo.pagesize - leading;

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (c) 2021 MediaTek Inc.
+ * Copyright (c) 2022 MediaTek Inc.
  * Author: Sam Shih <sam.shih@mediatek.com>
  */
 
@@ -22,11 +22,13 @@
 			device_type = "cpu";
 			compatible = "arm,cortex-a53";
 			reg = <0x0>;
+			mediatek,hwver = <&hwver>;
 		};
 		cpu1: cpu@1 {
 			device_type = "cpu";
 			compatible = "arm,cortex-a53";
 			reg = <0x1>;
+			mediatek,hwver = <&hwver>;
 		};
 	};
 
@@ -35,6 +37,11 @@
 		clock-frequency = <13000000>;
 		#clock-cells = <0>;
 		u-boot,dm-pre-reloc;
+	};
+
+	hwver: hwver {
+		compatible = "mediatek,hwver", "syscon";
+		reg = <0x8000000 0x1000>;
 	};
 
 	timer {
@@ -154,9 +161,9 @@
 				  <&infracfg_ao CK_INFRA_UART0_SEL>;
 		assigned-clock-parents = <&topckgen CK_TOP_CB_CKSQ_40M>,
 					 <&infracfg CK_INFRA_UART>;
-                mediatek,force-highspeed;
-                status = "disabled";
-                u-boot,dm-pre-reloc;
+		mediatek,force-highspeed;
+		status = "disabled";
+		u-boot,dm-pre-reloc;
 	};
 
 	uart1: serial@11003000 {
@@ -168,8 +175,8 @@
 				  <&infracfg_ao CK_INFRA_UART1_SEL>;
 		assigned-clock-parents = <&topckgen CK_TOP_CB_CKSQ_40M>,
 					 <&infracfg CK_INFRA_UART>;
-                mediatek,force-highspeed;
-                status = "disabled";
+		mediatek,force-highspeed;
+		status = "disabled";
 	};
 
 	uart2: serial@11004000 {
@@ -181,8 +188,8 @@
 				  <&infracfg_ao CK_INFRA_UART2_SEL>;
 		assigned-clock-parents = <&topckgen CK_TOP_CB_CKSQ_40M>,
 					 <&infracfg CK_INFRA_UART>;
-                mediatek,force-highspeed;
-                status = "disabled";
+		mediatek,force-highspeed;
+		status = "disabled";
 	};
 
 	snand: snand@11005000 {
@@ -270,19 +277,19 @@
 	};
 
 	mmc0: mmc@11230000 {
-                compatible = "mediatek,mt7981-mmc";
-                reg = <0x11230000 0x1000>,
-                      <0x11C20000 0x1000>;
-                interrupts = <GIC_SPI 143 IRQ_TYPE_LEVEL_HIGH>;
-                clocks = <&topckgen CK_TOP_EMMC_400M>,
-                         <&topckgen CK_TOP_EMMC_208M>,
-                         <&infracfg_ao CK_INFRA_MSDC_CK>;
-                assigned-clocks = <&topckgen CK_TOP_EMMC_400M_SEL>,
-                                  <&topckgen CK_TOP_EMMC_208M_SEL>;
-                assigned-clock-parents = <&topckgen CK_TOP_CB_NET2_D2>,
-                                         <&topckgen CK_TOP_CB_M_D2>;
-                clock-names = "source", "hclk", "source_cg";
-                status = "disabled";
-        };
+		compatible = "mediatek,mt7981-mmc";
+		reg = <0x11230000 0x1000>,
+		      <0x11C20000 0x1000>;
+		interrupts = <GIC_SPI 143 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&topckgen CK_TOP_EMMC_400M>,
+			 <&topckgen CK_TOP_EMMC_208M>,
+			 <&infracfg_ao CK_INFRA_MSDC_CK>;
+		assigned-clocks = <&topckgen CK_TOP_EMMC_400M_SEL>,
+				  <&topckgen CK_TOP_EMMC_208M_SEL>;
+		assigned-clock-parents = <&topckgen CK_TOP_CB_NET2_D2>,
+					 <&topckgen CK_TOP_CB_M_D2>;
+		clock-names = "source", "hclk", "source_cg";
+		status = "disabled";
+	};
 
 };

@@ -1,28 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (C) 2020 MediaTek Inc.
+ * Copyright (C) 2022 MediaTek Inc.
  * Author: Sam Shih <sam.shih@mediatek.com>
  */
 
-#include <common.h>
-#include <fdtdec.h>
-#include <asm/armv8/mmu.h>
 #include <init.h>
+#include <asm/armv8/mmu.h>
 #include <asm/system.h>
 #include <asm/global_data.h>
 #include <linux/sizes.h>
 
-#ifdef CONFIG_DEBUG_UART
-#include <debug_uart.h>
-#endif
-
 DECLARE_GLOBAL_DATA_PTR;
-
-int print_cpuinfo(void)
-{
-	printf("CPU:   MediaTek MT7986\n");
-	return 0;
-}
 
 int dram_init(void)
 {
@@ -30,7 +18,6 @@ int dram_init(void)
 
 	return 0;
 }
-
 
 void reset_cpu(ulong addr)
 {

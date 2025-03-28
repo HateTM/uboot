@@ -12,8 +12,6 @@
 #include <asm/io.h>
 #include <asm-generic/gpio.h>
 #include <linux/bitops.h>
-#include <dt-bindings/pinctrl/mt65xx.h>
-#include <dm/device_compat.h>
 
 #include "pinctrl-mtk-common.h"
 
@@ -71,7 +69,12 @@ static inline int get_count_order(unsigned int count)
 	return order;
 }
 
-void mtk_rmw(struct udevice *dev, u8 i, u32 reg, u32 mask, u32 set)
+void mtk_rmw(struct udevice *dev, u32 reg, u32 mask, u32 set)
+{
+	return mtk_i_rmw(dev, 0, reg, mask, set);
+}
+
+void mtk_i_rmw(struct udevice *dev, u8 i, u32 reg, u32 mask, u32 set)
 {
 	u32 val;
 
@@ -159,10 +162,10 @@ static void mtk_hw_write_cross_field(struct udevice *dev,
 
 	mtk_hw_bits_part(pf, &nbits_h, &nbits_l);
 
-	mtk_rmw(dev, pf->index, pf->offset, pf->mask << pf->bitpos,
+	mtk_i_rmw(dev, pf->index, pf->offset, pf->mask << pf->bitpos,
 		(value & pf->mask) << pf->bitpos);
 
-	mtk_rmw(dev, pf->index, pf->offset + pf->next, BIT(nbits_h) - 1,
+	mtk_i_rmw(dev, pf->index, pf->offset + pf->next, BIT(nbits_h) - 1,
 		(value & pf->mask) >> nbits_l);
 }
 
@@ -179,7 +182,6 @@ static void mtk_hw_read_cross_field(struct udevice *dev,
 	*value = (h << nbits_l) | l;
 }
 
-
 static int mtk_hw_set_value(struct udevice *dev, int pin, int field,
 			    int value)
 {
@@ -191,7 +193,7 @@ static int mtk_hw_set_value(struct udevice *dev, int pin, int field,
 		return err;
 
 	if (!pf.next)
-		mtk_rmw(dev, pf.index, pf.offset, pf.mask << pf.bitpos,
+		mtk_i_rmw(dev, pf.index, pf.offset, pf.mask << pf.bitpos,
 			(value & pf.mask) << pf.bitpos);
 	else
 		mtk_hw_write_cross_field(dev, &pf, value);
@@ -216,6 +218,25 @@ static int mtk_hw_get_value(struct udevice *dev, int pin, int field,
 
 	return 0;
 }
+
+#if CONFIG_IS_ENABLED(PINCONF)
+static int mtk_get_pin_io_type(struct udevice *dev, int pin,
+			       struct mtk_io_type_desc *io_type)
+{
+	struct mtk_pinctrl_priv *priv = dev_get_priv(dev);
+	u8 io_n = priv->soc->pins[pin].io_n;
+
+	if (io_n >= priv->soc->ntype)
+		return -EINVAL;
+
+	io_type->name = priv->soc->io_type[io_n].name;
+	io_type->bias_set = priv->soc->io_type[io_n].bias_set;
+	io_type->drive_set = priv->soc->io_type[io_n].drive_set;
+	io_type->input_enable = priv->soc->io_type[io_n].input_enable;
+
+	return 0;
+}
+#endif
 
 static int mtk_get_groups_count(struct udevice *dev)
 {
@@ -246,7 +267,6 @@ static int mtk_get_pin_muxing(struct udevice *dev, unsigned int selector,
 			      char *buf, int size)
 {
 	int val, err;
-
 	err = mtk_hw_get_value(dev, selector, PINCTRL_PIN_REG_MODE, &val);
 	if (err)
 		return err;
@@ -284,6 +304,20 @@ static const char *mtk_get_function_name(struct udevice *dev,
 	return priv->soc->funcs[selector].name;
 }
 
+static int mtk_pinmux_set(struct udevice *dev, unsigned int pin_selector,
+			  unsigned int func_selector)
+{
+
+	int err;
+
+	err = mtk_hw_set_value(dev, pin_selector, PINCTRL_PIN_REG_MODE,
+			       func_selector);
+	if (err)
+		return err;
+
+	return 0;
+}
+
 static int mtk_pinmux_group_set(struct udevice *dev,
 				unsigned int group_selector,
 				unsigned int func_selector)
@@ -318,19 +352,36 @@ static const struct pinconf_param mtk_conf_params[] = {
 	{ "drive-strength", PIN_CONFIG_DRIVE_STRENGTH, 0 },
 };
 
-
-int mtk_pinconf_bias_set_pu_pd(struct udevice *dev, u32 pin, u32 arg, u32 val)
+int mtk_pinconf_bias_set_v0(struct udevice *dev, u32 pin, bool disable,
+			    bool pullup, u32 val)
 {
-	int err, disable, pullup;
+	return mtk_pinconf_bias_set_pu_pd(dev, pin, disable, pullup, val);
+}
 
-	disable = (arg == PIN_CONFIG_BIAS_DISABLE);
-	pullup = (arg == PIN_CONFIG_BIAS_PULL_UP);
+int mtk_pinconf_bias_set_v1(struct udevice *dev, u32 pin, bool disable,
+			    bool pullup, u32 val)
+{
+	int err;
+
+	/* try pupd_r1_r0 if pullen_pullsel return error */
+	err = mtk_pinconf_bias_set_pullen_pullsel(dev, pin, disable, pullup,
+						  val);
+	if (err)
+		return mtk_pinconf_bias_set_pupd_r1_r0(dev, pin, disable,
+						       pullup, val);
+
+	return err;
+}
+
+int mtk_pinconf_bias_set_pu_pd(struct udevice *dev, u32 pin, bool disable,
+			       bool pullup, u32 val)
+{
+	int err;
 
 	if (disable) {
 		err = mtk_hw_set_value(dev, pin, PINCTRL_PIN_REG_PU, 0);
 		if (err)
 			return err;
-
 		err = mtk_hw_set_value(dev, pin, PINCTRL_PIN_REG_PD, 0);
 		if (err)
 			return err;
@@ -338,7 +389,6 @@ int mtk_pinconf_bias_set_pu_pd(struct udevice *dev, u32 pin, u32 arg, u32 val)
 		err = mtk_hw_set_value(dev, pin, PINCTRL_PIN_REG_PU, pullup);
 		if (err)
 			return err;
-
 		err = mtk_hw_set_value(dev, pin, PINCTRL_PIN_REG_PD, !pullup);
 		if (err)
 			return err;
@@ -347,65 +397,10 @@ int mtk_pinconf_bias_set_pu_pd(struct udevice *dev, u32 pin, u32 arg, u32 val)
 	return 0;
 }
 
-int mtk_pinconf_bias_set_pupd_r1_r0(struct udevice *dev, u32 pin, u32 arg, u32 val)
-{
-	int err, r0, r1, pullup;
-
-	pullup = (arg == PIN_CONFIG_BIAS_PULL_UP);
-
-	if ((arg == PIN_CONFIG_BIAS_DISABLE) || (val == MTK_PUPD_SET_R1R0_00)) {
-		pullup = 0;
-		r0 = 0;
-		r1 = 0;
-	} else if (val == MTK_PUPD_SET_R1R0_01) {
-		r0 = 1;
-		r1 = 0;
-	} else if (val == MTK_PUPD_SET_R1R0_10) {
-		r0 = 0;
-		r1 = 1;
-	} else if (val == MTK_PUPD_SET_R1R0_11) {
-		r0 = 1;
-		r1 = 1;
-	} else if (val == 1) {
-		r0 = 1;
-		r1 = 0;
-	} else {
-		err = -EINVAL;
-		goto out;
-	}
-
-	/* MTK HW PUPD bit: 1 for pull-down, 0 for pull-up */
-	err = mtk_hw_set_value(dev, pin, PINCTRL_PIN_REG_PUPD, !pullup);
-	if (err)
-		goto out;
-
-	err = mtk_hw_set_value(dev, pin, PINCTRL_PIN_REG_R0, r0);
-	if (err)
-		goto out;
-
-	err = mtk_hw_set_value(dev, pin, PINCTRL_PIN_REG_R1, r1);
-
-out:
-	return err;
-}
-
-int mtk_pinconf_bias_set_v0(struct udevice *dev, u32 pin, u32 arg, u32 val)
+int mtk_pinconf_bias_set_pullen_pullsel(struct udevice *dev, u32 pin,
+					bool disable, bool pullup, u32 val)
 {
 	int err;
-
-	err = mtk_pinconf_bias_set_pu_pd(dev, pin, arg, val);
-
-	return err;
-}
-
-int mtk_pinconf_bias_set_v1(struct udevice *dev, u32 pin, u32 arg, u32 val)
-{
-	int err, disable, pullup, r0, r1;
-
-	disable = (arg == PIN_CONFIG_BIAS_DISABLE);
-	pullup = (arg == PIN_CONFIG_BIAS_PULL_UP);
-	r0 = !!(val & 1);
-	r1 = !!(val & 2);
 
 	if (disable) {
 		err = mtk_hw_set_value(dev, pin, PINCTRL_PIN_REG_PULLEN, 0);
@@ -421,27 +416,58 @@ int mtk_pinconf_bias_set_v1(struct udevice *dev, u32 pin, u32 arg, u32 val)
 			return err;
 	}
 
-	/* Also set PUPD/R0/R1 if the pin has them */
-	err = mtk_hw_set_value(dev, pin, PINCTRL_PIN_REG_PUPD, !pullup);
-	if (err != -EINVAL) {
-		mtk_hw_set_value(dev, pin, PINCTRL_PIN_REG_R0, r0);
-		mtk_hw_set_value(dev, pin, PINCTRL_PIN_REG_R1, r1);
+	return 0;
+}
+
+int mtk_pinconf_bias_set_pupd_r1_r0(struct udevice *dev, u32 pin, bool disable,
+				    bool pullup, u32 val)
+{
+	int err, r0, r1;
+
+	r0 = !!(val & 1);
+	r1 = !!(val & 2);
+
+	if (disable) {
+		pullup = 0;
+		r0 = 0;
+		r1 = 0;
 	}
+
+	/* MTK HW PUPD bit: 1 for pull-down, 0 for pull-up */
+	err = mtk_hw_set_value(dev, pin, PINCTRL_PIN_REG_PUPD, !pullup);
+	if (err)
+		return err;
+
+	/* Also set PUPD/R0/R1 if the pin has them */
+	mtk_hw_set_value(dev, pin, PINCTRL_PIN_REG_R0, r0);
+	mtk_hw_set_value(dev, pin, PINCTRL_PIN_REG_R1, r1);
 
 	return 0;
 }
 
-int mtk_pinconf_bias_set_v2(struct udevice *dev, u32 pin, u32 arg, u32 val)
+int mtk_pinconf_bias_set(struct udevice *dev, u32 pin, u32 arg, u32 val)
 {
 	int err;
+	struct mtk_pinctrl_priv *priv = dev_get_priv(dev);
+	struct mtk_io_type_desc io_type;
+	int rev = priv->soc->rev;
+	bool disable, pullup;
 
-	err = mtk_pinconf_bias_set_pu_pd(dev, pin, arg, val);
-	if (!err)
-		return err;
+	disable = (arg == PIN_CONFIG_BIAS_DISABLE);
+	pullup = (arg == PIN_CONFIG_BIAS_PULL_UP);
 
-	err = mtk_pinconf_bias_set_pupd_r1_r0(dev, pin, arg, val);
-	if (err)
-		dev_dbg(dev, "Invalid pull argument\n");
+	if (!mtk_get_pin_io_type(dev, pin, &io_type)) {
+		if (io_type.bias_set)
+			err = io_type.bias_set(dev, pin, disable, pullup,
+					       val);
+		else
+			err = -EINVAL;
+
+	} else if (rev == MTK_PINCTRL_V0) {
+		err = mtk_pinconf_bias_set_v0(dev, pin, disable, pullup, val);
+	} else {
+		err = mtk_pinconf_bias_set_v1(dev, pin, disable, pullup, val);
+	}
 
 	return err;
 }
@@ -456,6 +482,23 @@ int mtk_pinconf_input_enable_v1(struct udevice *dev, u32 pin, u32 arg)
 	err = mtk_hw_set_value(dev, pin, PINCTRL_PIN_REG_DIR, 0);
 	if (err)
 		return err;
+
+	return 0;
+}
+
+int mtk_pinconf_input_enable(struct udevice *dev, u32 pin, u32 arg)
+{
+	struct mtk_pinctrl_priv *priv = dev_get_priv(dev);
+	struct mtk_io_type_desc io_type;
+
+	int rev = priv->soc->rev;
+
+	if (!mtk_get_pin_io_type(dev, pin, &io_type))
+		if (io_type.input_enable)
+			return io_type.input_enable(dev, pin, arg);
+	if (rev == MTK_PINCTRL_V1)
+		return mtk_pinconf_input_enable_v1(dev, pin, arg);
+
 	return 0;
 }
 
@@ -487,7 +530,6 @@ int mtk_pinconf_drive_set_v0(struct udevice *dev, u32 pin, u32 arg)
 	return 0;
 }
 
-
 int mtk_pinconf_drive_set_v1(struct udevice *dev, u32 pin, u32 arg)
 {
 	struct mtk_pinctrl_priv *priv = dev_get_priv(dev);
@@ -506,23 +548,37 @@ int mtk_pinconf_drive_set_v1(struct udevice *dev, u32 pin, u32 arg)
 	return 0;
 }
 
+int mtk_pinconf_drive_set(struct udevice *dev, u32 pin, u32 arg)
+{
+	int err;
+	struct mtk_pinctrl_priv *priv = dev_get_priv(dev);
+	struct mtk_io_type_desc io_type;
+	int rev = priv->soc->rev;
+
+	if (!mtk_get_pin_io_type(dev, pin, &io_type)) {
+		if (io_type.drive_set)
+			err = io_type.drive_set(dev, pin, arg);
+		else
+			err = -EINVAL;
+	} else if (rev == MTK_PINCTRL_V0) {
+		err = mtk_pinconf_drive_set_v0(dev, pin, arg);
+	} else {
+		err = mtk_pinconf_drive_set_v1(dev, pin, arg);
+	}
+
+	return err;
+}
+
 static int mtk_pinconf_set(struct udevice *dev, unsigned int pin,
 			   unsigned int param, unsigned int arg)
 {
 	int err = 0;
-	struct mtk_pinctrl_priv *priv = dev_get_priv(dev);
-	int rev = priv->soc->rev;
 
 	switch (param) {
 	case PIN_CONFIG_BIAS_DISABLE:
 	case PIN_CONFIG_BIAS_PULL_UP:
 	case PIN_CONFIG_BIAS_PULL_DOWN:
-		if (rev == MTK_PINCTRL_V0)
-			err = mtk_pinconf_bias_set_v0(dev, pin, param, arg);
-		else if (rev == MTK_PINCTRL_V1)
-			err = mtk_pinconf_bias_set_v1(dev, pin, param, arg);
-		else if (rev == MTK_PINCTRL_V2)
-			err = mtk_pinconf_bias_set_v2(dev, pin, param, arg);
+		err = mtk_pinconf_bias_set(dev, pin, param, arg);
 		if (err)
 			goto err;
 		break;
@@ -535,8 +591,7 @@ static int mtk_pinconf_set(struct udevice *dev, unsigned int pin,
 			goto err;
 		break;
 	case PIN_CONFIG_INPUT_ENABLE:
-		if (rev == MTK_PINCTRL_V1)
-			err = mtk_pinconf_input_enable_v1(dev, pin, param);
+		err = mtk_pinconf_input_enable(dev, pin, param);
 		if (err)
 			goto err;
 		break;
@@ -565,10 +620,7 @@ static int mtk_pinconf_set(struct udevice *dev, unsigned int pin,
 			goto err;
 		break;
 	case PIN_CONFIG_DRIVE_STRENGTH:
-		if (rev == MTK_PINCTRL_V0)
-			err = mtk_pinconf_drive_set_v0(dev, pin, arg);
-		else
-			err = mtk_pinconf_drive_set_v1(dev, pin, arg);
+		err = mtk_pinconf_drive_set(dev, pin, arg);
 		if (err)
 			goto err;
 		break;
@@ -578,7 +630,7 @@ static int mtk_pinconf_set(struct udevice *dev, unsigned int pin,
 	}
 
 err:
-	dev_dbg(dev, "mtk_pinconf_set fail: pin=%d, param=%d, arg=%d\n", pin, param, arg);
+
 	return err;
 }
 
@@ -609,6 +661,7 @@ const struct pinctrl_ops mtk_pinctrl_ops = {
 	.get_group_name = mtk_get_group_name,
 	.get_functions_count = mtk_get_functions_count,
 	.get_function_name = mtk_get_function_name,
+	.pinmux_set = mtk_pinmux_set,
 	.pinmux_group_set = mtk_pinmux_group_set,
 #if CONFIG_IS_ENABLED(PINCONF)
 	.pinconf_num_params = ARRAY_SIZE(mtk_conf_params),
@@ -662,40 +715,6 @@ static int mtk_gpio_direction_output(struct udevice *dev,
 	return mtk_hw_set_value(dev->parent, off, PINCTRL_PIN_REG_DIR, 1);
 }
 
-static int mtk_gpio_set_flags(struct udevice *dev, unsigned int offset,
-				    ulong flags)
-{
-	if (flags & GPIOD_IS_OUT)
-		mtk_gpio_direction_output(dev, offset, 0);
-	if (flags & GPIOD_IS_IN)
-		mtk_gpio_direction_input(dev, offset);
-	if (flags & GPIOD_IS_OUT_ACTIVE)
-		mtk_gpio_set(dev, offset, 1);
-	else
-		mtk_gpio_set(dev, offset, 0);
-	return 0;
-}
-
-static int mtk_gpio_get_flags(struct udevice *dev, unsigned int offset,
-				    ulong *flags)
-{
-	ulong dir_flags = 0;
-
-	switch (mtk_gpio_get_direction(dev, offset)) {
-	case GPIOF_OUTPUT:
-		dir_flags |= GPIOD_IS_OUT;
-		break;
-	case GPIOF_INPUT:
-		dir_flags |= GPIOD_IS_IN;
-		break;
-	default:
-		break;
-	}
-	*flags = dir_flags;
-
-	return 0;
-}
-
 static int mtk_gpio_request(struct udevice *dev, unsigned int off,
 			    const char *label)
 {
@@ -724,8 +743,6 @@ static const struct dm_gpio_ops mtk_gpio_ops = {
 	.get_function = mtk_gpio_get_direction,
 	.direction_input = mtk_gpio_direction_input,
 	.direction_output = mtk_gpio_direction_output,
-	.set_flags = mtk_gpio_set_flags,
-	.get_flags = mtk_gpio_get_flags,
 };
 
 static struct driver mtk_gpio_driver = {
@@ -779,13 +796,13 @@ int mtk_pinctrl_common_probe(struct udevice *dev,
 	priv->soc = soc;
 
 	if (!base_calc)
-		nbase_names = 1;	
+		nbase_names = 1;
 
 	for (i = 0; i < nbase_names; i++) {
 		addr = devfdt_get_addr_index(dev, i);
 		if (addr == FDT_ADDR_T_NONE)
 			return -EINVAL;
-		priv->base[i] = (void __iomem *) addr;
+		priv->base[i] = (void __iomem *)addr;
 	}
 
 #if CONFIG_IS_ENABLED(DM_GPIO) || \
@@ -795,4 +812,3 @@ int mtk_pinctrl_common_probe(struct udevice *dev,
 
 	return ret;
 }
-

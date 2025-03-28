@@ -2,11 +2,10 @@
 /*
  * MediaTek clock driver for MT7981 SoC
  *
- * Copyright (C) 2021 MediaTek Inc.
+ * Copyright (C) 2022 MediaTek Inc.
  * Author: Sam Shih <sam.shih@mediatek.com>
  */
 
-#include <common.h>
 #include <dm.h>
 #include <log.h>
 #include <asm/arch-mediatek/reset.h>
@@ -383,10 +382,10 @@ static const int infra_pcie_parents[] = { CK_INFRA_CK_F32K, CK_INFRA_CK_F26M,
 
 #define INFRA_MUX(_id, _name, _parents, _reg, _shift, _width)                  \
 	{                                                                      \
-		.id = _id, .mux_reg = _reg + 0x8, .mux_set_reg = _reg + 0x0,   \
-		.mux_clr_reg = _reg + 0x4, .mux_shift = _shift,                \
-		.mux_mask = BIT(_width) - 1, .parent = _parents,               \
-		.num_parents = ARRAY_SIZE(_parents),                           \
+		.id = _id, .mux_reg = (_reg) + 0x8,                            \
+		.mux_set_reg = (_reg) + 0x0, .mux_clr_reg = (_reg) + 0x4,      \
+		.mux_shift = _shift, .mux_mask = BIT(_width) - 1,              \
+		.parent = _parents, .num_parents = ARRAY_SIZE(_parents),       \
 		.flags = CLK_MUX_SETCLR_UPD | CLK_PARENT_INFRASYS,             \
 	}
 
@@ -563,6 +562,7 @@ static int mt7981_topckgen_probe(struct udevice *dev)
 
 	priv->base = dev_read_addr_ptr(dev);
 	writel(MT7981_CLK_PDN_EN_WRITE, priv->base + MT7981_CLK_PDN);
+
 	return mtk_common_clk_init(dev, &mt7981_topckgen_clk_tree);
 }
 
@@ -658,19 +658,17 @@ static int mt7981_ethsys_bind(struct udevice *dev)
 {
 	int ret = 0;
 
-#if CONFIG_IS_ENABLED(RESET_MEDIATEK)
-	ret = mediatek_reset_bind(dev, ETHSYS_HIFSYS_RST_CTRL_OFS, 1);
-	if (ret)
-		debug("Warning: failed to bind reset controller\n");
-#endif
+	if (CONFIG_IS_ENABLED(RESET_MEDIATEK)) {
+		ret = mediatek_reset_bind(dev, ETHSYS_HIFSYS_RST_CTRL_OFS, 1);
+		if (ret)
+			debug("Warning: failed to bind reset controller\n");
+	}
 
 	return ret;
 }
 
 static const struct udevice_id mt7981_ethsys_compat[] = {
-	{
-		.compatible = "mediatek,mt7981-ethsys",
-	},
+	{ .compatible = "mediatek,mt7981-ethsys", },
 	{}
 };
 

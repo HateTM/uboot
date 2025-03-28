@@ -10,7 +10,6 @@
 #include <linux/kernel.h>
 #include <linux/types.h>
 #include <linux/mtd/mtd.h>
-#include <linux/mtd/rawnand.h>
 #include <jffs2/load_kernel.h>
 #include <watchdog.h>
 
@@ -243,7 +242,7 @@ static int nmbm_mtd_read_data(struct nmbm_mtd *nm, uint64_t addr,
 	ops->retlen = 0;
 
 	while (len || ooblen) {
-		WATCHDOG_RESET();
+		schedule();
 
 		ret = nmbm_read_single_page(nm->ni, addr, datcache, oobcache,
 					    mode);
@@ -297,7 +296,6 @@ static int nmbm_mtd_read_oob(struct mtd_info *mtd, loff_t from,
 			     struct mtd_oob_ops *ops)
 {
 	struct nmbm_mtd *nm = container_of(mtd, struct nmbm_mtd, upper);
-	struct nand_chip *nand = mtd_to_nand(nm->lower);
 	uint32_t maxooblen;
 	enum nmbm_oob_mode mode;
 
@@ -345,8 +343,8 @@ static int nmbm_mtd_read_oob(struct mtd_info *mtd, loff_t from,
 	}
 
 	if (unlikely(from >= mtd->size ||
-	    ops->ooboffs + ops->ooblen > ((mtd->size >> nand->page_shift) -
-	    (from >> nand->page_shift)) * maxooblen)) {
+	    ops->ooboffs + ops->ooblen > ((mtd->size >> mtd->writesize_shift) -
+	    (from >> mtd->writesize_shift)) * maxooblen)) {
 		pr_debug("%s: attempt to read beyond end of device\n",
 				__func__);
 		return -EINVAL;
@@ -377,7 +375,7 @@ static int nmbm_mtd_write_data(struct nmbm_mtd *nm, uint64_t addr,
 	ops->retlen = 0;
 
 	while (len || ooblen) {
-		WATCHDOG_RESET();
+		schedule();
 
 		if (len) {
 			/* Move data */
@@ -426,7 +424,6 @@ static int nmbm_mtd_write_oob(struct mtd_info *mtd, loff_t to,
 			      struct mtd_oob_ops *ops)
 {
 	struct nmbm_mtd *nm = container_of(mtd, struct nmbm_mtd, upper);
-	struct nand_chip *nand = mtd_to_nand(nm->lower);
 	enum nmbm_oob_mode mode;
 	uint32_t maxooblen;
 
@@ -475,8 +472,8 @@ static int nmbm_mtd_write_oob(struct mtd_info *mtd, loff_t to,
 	}
 
 	if (unlikely(to >= mtd->size ||
-	    ops->ooboffs + ops->ooblen > ((mtd->size >> nand->page_shift) -
-	    (to >> nand->page_shift)) * maxooblen)) {
+	    ops->ooboffs + ops->ooblen > ((mtd->size >> mtd->writesize_shift) -
+	    (to >> mtd->writesize_shift)) * maxooblen)) {
 		pr_debug("%s: attempt to write beyond end of device\n",
 				__func__);
 		return -EINVAL;

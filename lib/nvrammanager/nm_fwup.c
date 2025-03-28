@@ -34,12 +34,12 @@
 
 #include "env.h"
 #include "command.h"
-#include "../../board/mediatek/common/ubi_helper.h"
+#include "../../board/mediatek/common/mtd_helper.h"
 /**************************************************************************************************/
 /*                                      DEFINES                                                   */
 /**************************************************************************************************/
 /* Porting memory managing utils. */
-extern void *malloc(unsigned int size);
+//extern void *malloc(unsigned int size);
 extern void free(void *src);
 #define fflush(stdout) 
 
@@ -66,8 +66,8 @@ STATUS nm_upgradeFwupFile(char *pAppBuf, unsigned int nFileBytes);
 /**************************************************************************************************/
 static int nm_readFwUpTbl(char *buf, int len);
 static NM_UP_PTN_ENTRY *nm_ptnNameToUpEntry(const char *ptnName);
-static int nm_writeRootToMtd(char *buf, int len, int idx);
-static int nm_eraseRuntimeData(void);
+//static int nm_writeRootToMtd(char *buf, int len, int idx);
+//static int nm_eraseRuntimeData(void);
 int nm_setBootIdx(int idx);
 static int nm_checkUpContents(char *contentsBuf, int contentSize);
 

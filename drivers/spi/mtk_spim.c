@@ -1,83 +1,90 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2022 MediaTek Inc. All Rights Reserved.
+ *
+ * Author: SkyLake.Huang <skylake.huang@mediatek.com>
+ */
+
 #include <clk.h>
-#include <common.h>
 #include <cpu_func.h>
 #include <div64.h>
 #include <dm.h>
+#include <spi.h>
+#include <spi-mem.h>
+#include <stdbool.h>
+#include <watchdog.h>
 #include <dm/device.h>
 #include <dm/device_compat.h>
 #include <dm/devres.h>
 #include <dm/pinctrl.h>
 #include <linux/bitops.h>
 #include <linux/completion.h>
+#include <linux/dma-mapping.h>
 #include <linux/io.h>
 #include <linux/iopoll.h>
-#include <spi.h>
-#include <spi-mem.h>
-#include <stdbool.h>
-#include <watchdog.h>
-#include <linux/dma-mapping.h>
+#include <linux/sizes.h>
 
-#define SPI_CFG0_REG			  0x0000
-#define SPI_CFG1_REG			  0x0004
-#define SPI_TX_SRC_REG			  0x0008
-#define SPI_RX_DST_REG			  0x000c
-#define SPI_TX_DATA_REG			  0x0010
-#define SPI_RX_DATA_REG			  0x0014
-#define SPI_CMD_REG				  0x0018
-#define SPI_IRQ_REG				  0x001c
-#define SPI_STATUS_REG			  0x0020
-#define SPI_PAD_SEL_REG			  0x0024
-#define SPI_CFG2_REG			  0x0028
-#define SPI_TX_SRC_REG_64		  0x002c
-#define SPI_RX_DST_REG_64		  0x0030
-#define SPI_CFG3_IPM_REG		  0x0040
+#define SPI_CFG0_REG				0x0000
+#define SPI_CFG1_REG				0x0004
+#define SPI_TX_SRC_REG				0x0008
+#define SPI_RX_DST_REG				0x000c
+#define SPI_TX_DATA_REG				0x0010
+#define SPI_RX_DATA_REG				0x0014
+#define SPI_CMD_REG				0x0018
+#define SPI_IRQ_REG				0x001c
+#define SPI_STATUS_REG				0x0020
+#define SPI_PAD_SEL_REG				0x0024
+#define SPI_CFG2_REG				0x0028
+#define SPI_TX_SRC_REG_64			0x002c
+#define SPI_RX_DST_REG_64			0x0030
+#define SPI_CFG3_IPM_REG			0x0040
 
-#define SPI_CFG0_SCK_HIGH_OFFSET	  0
-#define SPI_CFG0_SCK_LOW_OFFSET		  8
-#define SPI_CFG0_CS_HOLD_OFFSET		  16
-#define SPI_CFG0_CS_SETUP_OFFSET	  24
-#define SPI_ADJUST_CFG0_CS_HOLD_OFFSET	  0
-#define SPI_ADJUST_CFG0_CS_SETUP_OFFSET   16
+#define SPI_CFG0_SCK_HIGH_OFFSET		0
+#define SPI_CFG0_SCK_LOW_OFFSET			8
+#define SPI_CFG0_CS_HOLD_OFFSET			16
+#define SPI_CFG0_CS_SETUP_OFFSET		24
+#define SPI_ADJUST_CFG0_CS_HOLD_OFFSET		0
+#define SPI_ADJUST_CFG0_CS_SETUP_OFFSET		16
 
-#define SPI_CFG1_CS_IDLE_OFFSET		  0
-#define SPI_CFG1_PACKET_LOOP_OFFSET	  8
-#define SPI_CFG1_PACKET_LENGTH_OFFSET	  16
-#define SPI_CFG1_GET_TICKDLY_OFFSET	  29
+#define SPI_CFG1_CS_IDLE_OFFSET			0
+#define SPI_CFG1_PACKET_LOOP_OFFSET		8
+#define SPI_CFG1_PACKET_LENGTH_OFFSET		16
+#define SPI_CFG1_GET_TICKDLY_OFFSET		29
 
-#define SPI_CFG1_GET_TICKDLY_MASK	  GENMASK(31, 29)
-#define SPI_CFG1_CS_IDLE_MASK		  0xff
-#define SPI_CFG1_PACKET_LOOP_MASK	  0xff00
-#define SPI_CFG1_PACKET_LENGTH_MASK	  0x3ff0000
-#define SPI_CFG1_IPM_PACKET_LENGTH_MASK   GENMASK(31, 16)
-#define SPI_CFG2_SCK_HIGH_OFFSET	  0
-#define SPI_CFG2_SCK_LOW_OFFSET		  16
-#define SPI_CFG2_SCK_HIGH_MASK        GENMASK(15, 0)
-#define SPI_CFG2_SCK_LOW_MASK         GENMASK(31, 16)
+#define SPI_CFG1_GET_TICKDLY_MASK		GENMASK(31, 29)
+#define SPI_CFG1_CS_IDLE_MASK			0xff
+#define SPI_CFG1_PACKET_LOOP_MASK		0xff00
+#define SPI_CFG1_PACKET_LENGTH_MASK		0x3ff0000
+#define SPI_CFG1_IPM_PACKET_LENGTH_MASK		GENMASK(31, 16)
+#define SPI_CFG2_SCK_HIGH_OFFSET		0
+#define SPI_CFG2_SCK_LOW_OFFSET			16
+#define SPI_CFG2_SCK_HIGH_MASK			GENMASK(15, 0)
+#define SPI_CFG2_SCK_LOW_MASK			GENMASK(31, 16)
 
-#define SPI_CMD_ACT		     BIT(0)
-#define SPI_CMD_RESUME		     BIT(1)
-#define SPI_CMD_RST		     BIT(2)
-#define SPI_CMD_PAUSE_EN	     BIT(4)
-#define SPI_CMD_DEASSERT	     BIT(5)
-#define SPI_CMD_SAMPLE_SEL	     BIT(6)
-#define SPI_CMD_CS_POL		     BIT(7)
-#define SPI_CMD_CPHA		     BIT(8)
-#define SPI_CMD_CPOL		     BIT(9)
-#define SPI_CMD_RX_DMA		     BIT(10)
-#define SPI_CMD_TX_DMA		     BIT(11)
-#define SPI_CMD_TXMSBF		     BIT(12)
-#define SPI_CMD_RXMSBF		     BIT(13)
-#define SPI_CMD_RX_ENDIAN	     BIT(14)
-#define SPI_CMD_TX_ENDIAN	     BIT(15)
-#define SPI_CMD_FINISH_IE	     BIT(16)
-#define SPI_CMD_PAUSE_IE	     BIT(17)
-#define SPI_CMD_IPM_NONIDLE_MODE     BIT(19)
-#define SPI_CMD_IPM_SPIM_LOOP	     BIT(21)
-#define SPI_CMD_IPM_GET_TICKDLY_OFFSET	  22
+#define SPI_CMD_ACT				BIT(0)
+#define SPI_CMD_RESUME				BIT(1)
+#define SPI_CMD_RST				BIT(2)
+#define SPI_CMD_PAUSE_EN			BIT(4)
+#define SPI_CMD_DEASSERT			BIT(5)
+#define SPI_CMD_SAMPLE_SEL			BIT(6)
+#define SPI_CMD_CS_POL				BIT(7)
+#define SPI_CMD_CPHA				BIT(8)
+#define SPI_CMD_CPOL				BIT(9)
+#define SPI_CMD_RX_DMA				BIT(10)
+#define SPI_CMD_TX_DMA				BIT(11)
+#define SPI_CMD_TXMSBF				BIT(12)
+#define SPI_CMD_RXMSBF				BIT(13)
+#define SPI_CMD_RX_ENDIAN			BIT(14)
+#define SPI_CMD_TX_ENDIAN			BIT(15)
+#define SPI_CMD_FINISH_IE			BIT(16)
+#define SPI_CMD_PAUSE_IE			BIT(17)
+#define SPI_CMD_IPM_NONIDLE_MODE		BIT(19)
+#define SPI_CMD_IPM_SPIM_LOOP			BIT(21)
+#define SPI_CMD_IPM_GET_TICKDLY_OFFSET		22
 
-#define SPI_CMD_IPM_GET_TICKDLY_MASK	GENMASK(24, 22)
+#define SPI_CMD_IPM_GET_TICKDLY_MASK		GENMASK(24, 22)
 
-#define PIN_MODE_CFG(x) ((x) / 2)
+#define PIN_MODE_CFG(x)				((x) / 2)
 
 #define SPI_CFG3_IPM_PIN_MODE_OFFSET		0
 #define SPI_CFG3_IPM_HALF_DUPLEX_DIR		BIT(2)
@@ -93,55 +100,60 @@
 #define SPI_CFG3_IPM_ADDR_BYTELEN_MASK		GENMASK(15, 12)
 #define SPI_CFG3_IPM_DUMMY_BYTELEN_MASK		GENMASK(19, 16)
 
-#define MT8173_SPI_MAX_PAD_SEL 3
+#define MT8173_SPI_MAX_PAD_SEL			3
 
-#define MTK_SPI_PAUSE_INT_STATUS 0x2
+#define MTK_SPI_PAUSE_INT_STATUS		0x2
 
-#define MTK_SPI_IDLE 0
-#define MTK_SPI_PAUSED 1
+#define MTK_SPI_IDLE				0
+#define MTK_SPI_PAUSED				1
 
-#define MTK_SPI_MAX_FIFO_SIZE 32U
-#define MTK_SPI_PACKET_SIZE 1024
-#define MTK_SPI_IPM_PACKET_SIZE SZ_64K
-#define MTK_SPI_IPM_PACKET_LOOP SZ_256
+#define MTK_SPI_MAX_FIFO_SIZE			32U
+#define MTK_SPI_PACKET_SIZE			1024
+#define MTK_SPI_IPM_PACKET_SIZE			SZ_64K
+#define MTK_SPI_IPM_PACKET_LOOP			SZ_256
 
-#define MTK_SPI_32BITS_MASK  (0xffffffff)
+#define MTK_SPI_32BITS_MASK			0xffffffff
 
-#define DMA_ADDR_EXT_BITS (36)
-#define DMA_ADDR_DEF_BITS (32)
+#define DMA_ADDR_EXT_BITS			36
+#define DMA_ADDR_DEF_BITS			32
 
-#define CLK_TO_US(frequency, clkcnt) DIV_ROUND_UP(clkcnt, frequency / 1000000)
+#define CLK_TO_US(freq, clkcnt) DIV_ROUND_UP((clkcnt), (freq) / 1000000)
 
+/* struct mtk_spim_capability
+ * @enhance_timing:	Some IC design adjust cfg register to enhance time accuracy
+ * @dma_ext:		Some IC support DMA addr extension
+ * @ipm_design:		The IPM IP design improves some features, and supports dual/quad mode
+ * @support_quad:	Whether quad mode is supported
+ */
 struct mtk_spim_capability {
-	bool need_pad_sel;
-	/* Must explicitly send dummy Tx bytes to do Rx only transfer */
-	bool must_tx;
-	/* some IC design adjust cfg register to enhance time accuracy */
 	bool enhance_timing;
-	/* some IC support DMA addr extension */
 	bool dma_ext;
-	/* the IPM IP design improve some feature, and support dual/quad mode */
 	bool ipm_design;
 	bool support_quad;
 };
 
+/* struct mtk_spim_priv
+ * @base:		Base address of the spi controller
+ * @state:		Controller state
+ * @sel_clk:		Pad clock
+ * @spi_clk:		Core clock
+ * @xfer_len:		Current length of data for transfer
+ * @hw_cap:		Controller capabilities
+ * @tick_dly:		Used to postpone SPI sampling time
+ * @sample_sel:		Sample edge of MISO
+ * @dev:		udevice of this spi controller
+ * @tx_dma:		Tx DMA address
+ * @rx_dma:		Rx DMA address
+ */
 struct mtk_spim_priv {
 	void __iomem *base;
 	u32 state;
-	int pad_num;
-	u32 *pad_sel;
 	struct clk sel_clk, spi_clk;
-	struct spi_transfer *cur_transfer;
 	u32 xfer_len;
-	u32 num_xfered;
-	struct scatterlist *tx_sgl, *rx_sgl;
-	u32 tx_sgl_len, rx_sgl_len;
 	struct mtk_spim_capability hw_cap;
 	u32 tick_dly;
 	u32 sample_sel;
 
-	struct completion spimem_done;
-	bool use_spimem;
 	struct device *dev;
 	dma_addr_t tx_dma;
 	dma_addr_t rx_dma;
@@ -149,24 +161,17 @@ struct mtk_spim_priv {
 
 static void mtk_spim_reset(struct mtk_spim_priv *priv)
 {
-	u32 reg_val;
-
 	/* set the software reset bit in SPI_CMD_REG. */
-	reg_val = readl(priv->base + SPI_CMD_REG);
-	reg_val |= SPI_CMD_RST;
-	writel(reg_val, priv->base + SPI_CMD_REG);
-
-	reg_val = readl(priv->base + SPI_CMD_REG);
-	reg_val &= ~SPI_CMD_RST;
-	writel(reg_val, priv->base + SPI_CMD_REG);
+	setbits_le32(priv->base + SPI_CMD_REG, SPI_CMD_RST);
+	clrbits_le32(priv->base + SPI_CMD_REG, SPI_CMD_RST);
 }
 
 static int mtk_spim_hw_init(struct spi_slave *slave)
 {
-	u16 cpha, cpol;
-	u32 reg_val;
 	struct udevice *bus = dev_get_parent(slave->dev);
 	struct mtk_spim_priv *priv = dev_get_priv(bus);
+	u16 cpha, cpol;
+	u32 reg_val;
 
 	cpha = slave->mode & SPI_CPHA ? 1 : 0;
 	cpol = slave->mode & SPI_CPOL ? 1 : 0;
@@ -177,18 +182,15 @@ static int mtk_spim_hw_init(struct spi_slave *slave)
 			 * here write to default value
 			 */
 			writel(0x0, priv->base + SPI_CFG3_IPM_REG);
-
-			reg_val = readl(priv->base + SPI_CMD_REG);
-			reg_val &= ~SPI_CMD_IPM_GET_TICKDLY_MASK;
-			reg_val |= priv->tick_dly
-				   << SPI_CMD_IPM_GET_TICKDLY_OFFSET;
-			writel(reg_val, priv->base + SPI_CMD_REG);
+			clrsetbits_le32(priv->base + SPI_CMD_REG,
+					SPI_CMD_IPM_GET_TICKDLY_MASK,
+					priv->tick_dly <<
+					SPI_CMD_IPM_GET_TICKDLY_OFFSET);
 		} else {
-			reg_val = readl(priv->base + SPI_CFG1_REG);
-			reg_val &= ~SPI_CFG1_GET_TICKDLY_MASK;
-			reg_val |= priv->tick_dly
-				   << SPI_CFG1_GET_TICKDLY_OFFSET;
-			writel(reg_val, priv->base + SPI_CFG1_REG);
+			clrsetbits_le32(priv->base + SPI_CFG1_REG,
+					SPI_CFG1_GET_TICKDLY_MASK,
+					priv->tick_dly <<
+					SPI_CFG1_GET_TICKDLY_OFFSET);
 		}
 	}
 
@@ -220,14 +222,10 @@ static int mtk_spim_hw_init(struct spi_slave *slave)
 		reg_val |= SPI_CMD_RXMSBF;
 	}
 
-	/* set the tx/rx endian */
-#ifdef __LITTLE_ENDIAN
+	/* do not reverse tx/rx endian */
 	reg_val &= ~SPI_CMD_TX_ENDIAN;
 	reg_val &= ~SPI_CMD_RX_ENDIAN;
-#else
-	reg_val |= SPI_CMD_TX_ENDIAN;
-	reg_val |= SPI_CMD_RX_ENDIAN;
-#endif
+
 	if (priv->hw_cap.enhance_timing) {
 		/* set CS polarity */
 		if (slave->mode & SPI_CS_HIGH)
@@ -249,18 +247,11 @@ static int mtk_spim_hw_init(struct spi_slave *slave)
 
 	writel(reg_val, priv->base + SPI_CMD_REG);
 
-#if !CONFIG_IS_ENABLED(DM_SPI)
-	/* pad select, we don't need this in IPM design. */
-	if (priv->hw_cap.need_pad_sel)
-		writel(priv->pad_sel[slave->cs],
-		       priv->base + SPI_PAD_SEL_REG);
-#endif
-
 	return 0;
 }
 
 static void mtk_spim_prepare_transfer(struct mtk_spim_priv *priv,
-				     u32 speed_hz)
+				      u32 speed_hz)
 {
 	u32 spi_clk_hz, div, sck_time, cs_time, reg_val;
 
@@ -274,35 +265,48 @@ static void mtk_spim_prepare_transfer(struct mtk_spim_priv *priv,
 	cs_time = sck_time * 2;
 
 	if (priv->hw_cap.enhance_timing) {
-		reg_val = (((sck_time - 1) & 0xffff)
-			   << SPI_CFG2_SCK_HIGH_OFFSET);
-		reg_val |= (((sck_time - 1) & 0xffff)
-			   << SPI_CFG2_SCK_LOW_OFFSET);
+		reg_val = ((sck_time - 1) & 0xffff)
+			   << SPI_CFG2_SCK_HIGH_OFFSET;
+		reg_val |= ((sck_time - 1) & 0xffff)
+			   << SPI_CFG2_SCK_LOW_OFFSET;
 		writel(reg_val, priv->base + SPI_CFG2_REG);
-		reg_val = (((cs_time - 1) & 0xffff)
-			   << SPI_ADJUST_CFG0_CS_HOLD_OFFSET);
-		reg_val |= (((cs_time - 1) & 0xffff)
-			   << SPI_ADJUST_CFG0_CS_SETUP_OFFSET);
+
+		reg_val = ((cs_time - 1) & 0xffff)
+			   << SPI_ADJUST_CFG0_CS_HOLD_OFFSET;
+		reg_val |= ((cs_time - 1) & 0xffff)
+			   << SPI_ADJUST_CFG0_CS_SETUP_OFFSET;
 		writel(reg_val, priv->base + SPI_CFG0_REG);
 	} else {
-		reg_val = (((sck_time - 1) & 0xff)
-			   << SPI_CFG0_SCK_HIGH_OFFSET);
-		reg_val |= (((sck_time - 1) & 0xff) << SPI_CFG0_SCK_LOW_OFFSET);
-		reg_val |= (((cs_time - 1) & 0xff) << SPI_CFG0_CS_HOLD_OFFSET);
-		reg_val |= (((cs_time - 1) & 0xff) << SPI_CFG0_CS_SETUP_OFFSET);
+		reg_val = ((sck_time - 1) & 0xff)
+			   << SPI_CFG0_SCK_HIGH_OFFSET;
+		reg_val |= ((sck_time - 1) & 0xff) << SPI_CFG0_SCK_LOW_OFFSET;
+		reg_val |= ((cs_time - 1) & 0xff) << SPI_CFG0_CS_HOLD_OFFSET;
+		reg_val |= ((cs_time - 1) & 0xff) << SPI_CFG0_CS_SETUP_OFFSET;
 		writel(reg_val, priv->base + SPI_CFG0_REG);
 	}
 
 	reg_val = readl(priv->base + SPI_CFG1_REG);
 	reg_val &= ~SPI_CFG1_CS_IDLE_MASK;
-	reg_val |= (((cs_time - 1) & 0xff) << SPI_CFG1_CS_IDLE_OFFSET);
+	reg_val |= ((cs_time - 1) & 0xff) << SPI_CFG1_CS_IDLE_OFFSET;
 	writel(reg_val, priv->base + SPI_CFG1_REG);
 }
 
+/**
+ * mtk_spim_setup_packet() - setup packet format.
+ * @priv:	controller priv
+ *
+ * This controller sents/receives data in packets. The packet size is
+ * configurable.
+ *
+ * This function calculates the maximum packet size available for current
+ * data, and calculates the number of packets required to sent/receive data
+ * as much as possible.
+ */
 static void mtk_spim_setup_packet(struct mtk_spim_priv *priv)
 {
 	u32 packet_size, packet_loop, reg_val;
 
+	/* Calculate maximum packet size */
 	if (priv->hw_cap.ipm_design)
 		packet_size = min_t(u32,
 				    priv->xfer_len,
@@ -312,6 +316,7 @@ static void mtk_spim_setup_packet(struct mtk_spim_priv *priv)
 				    priv->xfer_len,
 				    MTK_SPI_PACKET_SIZE);
 
+	/* Calculates number of packets to sent/receive */
 	packet_loop = priv->xfer_len / packet_size;
 
 	reg_val = readl(priv->base + SPI_CFG1_REG);
@@ -342,11 +347,19 @@ static void mtk_spim_enable_transfer(struct mtk_spim_priv *priv)
 }
 
 static bool mtk_spim_supports_op(struct spi_slave *slave,
-				     const struct spi_mem_op *op)
+				 const struct spi_mem_op *op)
 {
+	struct udevice *bus = dev_get_parent(slave->dev);
+	struct mtk_spim_priv *priv = dev_get_priv(bus);
+
 	if (op->cmd.buswidth == 0 || op->cmd.buswidth > 4 ||
 	    op->addr.buswidth > 4 || op->dummy.buswidth > 4 ||
 	    op->data.buswidth > 4)
+		return false;
+
+	if (!priv->hw_cap.support_quad && (op->cmd.buswidth > 2 ||
+	    op->addr.buswidth > 2 || op->dummy.buswidth > 2 ||
+	    op->data.buswidth > 2))
 		return false;
 
 	if (op->addr.nbytes && op->dummy.nbytes &&
@@ -363,46 +376,37 @@ static bool mtk_spim_supports_op(struct spi_slave *slave,
 			return false;
 	}
 
-	/*if (op->data.dir == SPI_MEM_DATA_IN &&
-	    !IS_ALIGNED((size_t)op->data.buf.in, 4))
-		return false;*/
-
 	return true;
 }
 
 static void mtk_spim_setup_dma_xfer(struct mtk_spim_priv *priv,
-				   const struct spi_mem_op *op)
+				    const struct spi_mem_op *op)
 {
 	writel((u32)(priv->tx_dma & MTK_SPI_32BITS_MASK),
 	       priv->base + SPI_TX_SRC_REG);
-#ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT
-	if (priv->dev_comp->dma_ext)
+
+	if (priv->hw_cap.dma_ext)
 		writel((u32)(priv->tx_dma >> 32),
 		       priv->base + SPI_TX_SRC_REG_64);
-#endif
 
 	if (op->data.dir == SPI_MEM_DATA_IN) {
 		writel((u32)(priv->rx_dma & MTK_SPI_32BITS_MASK),
-			   priv->base + SPI_RX_DST_REG);
-#ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT
-		if (priv->dev_comp->dma_ext)
+		       priv->base + SPI_RX_DST_REG);
+
+		if (priv->hw_cap.dma_ext)
 			writel((u32)(priv->rx_dma >> 32),
-				   priv->base + SPI_RX_DST_REG_64);
-#endif
+			       priv->base + SPI_RX_DST_REG_64);
 	}
 }
 
 static int mtk_spim_transfer_wait(struct spi_slave *slave,
-		const struct spi_mem_op *op)
+				  const struct spi_mem_op *op)
 {
-	int ret = 0;
-	u32 reg;
-	u32 clk_count;
-	u32 spi_bus_clk;
-	u32 sck_l, sck_h; //sck low count, sck high count
 	struct udevice *bus = dev_get_parent(slave->dev);
 	struct mtk_spim_priv *priv = dev_get_priv(bus);
-	unsigned long us = 1;
+	u32 sck_l, sck_h, spi_bus_clk, clk_count, reg;
+	ulong us = 1;
+	int ret = 0;
 
 	if (op->data.dir == SPI_MEM_NO_DATA)
 		clk_count = 32;
@@ -412,16 +416,16 @@ static int mtk_spim_transfer_wait(struct spi_slave *slave,
 	spi_bus_clk = clk_get_rate(&priv->spi_clk);
 	sck_l = readl(priv->base + SPI_CFG2_REG) >> SPI_CFG2_SCK_LOW_OFFSET;
 	sck_h = readl(priv->base + SPI_CFG2_REG) & SPI_CFG2_SCK_HIGH_MASK;
-	do_div(spi_bus_clk, sck_l+sck_h+2);
+	do_div(spi_bus_clk, sck_l + sck_h + 2);
 
 	us = CLK_TO_US(spi_bus_clk, clk_count * 8);
-	us += 1000*1000; /* 1s tolerance */
+	us += 1000 * 1000; /* 1s tolerance */
 
 	if (us > UINT_MAX)
 		us = UINT_MAX;
 
 	ret = readl_poll_timeout(priv->base + SPI_STATUS_REG, reg,
-			reg & 0x1, us);
+				 reg & 0x1, us);
 	if (ret < 0) {
 		dev_err(priv->dev, "transfer timeout, val: 0x%lx\n", us);
 		return -ETIMEDOUT;
@@ -435,13 +439,10 @@ static int mtk_spim_exec_op(struct spi_slave *slave,
 {
 	struct udevice *bus = dev_get_parent(slave->dev);
 	struct mtk_spim_priv *priv = dev_get_priv(bus);
-
 	u32 reg_val, nio = 1, tx_size;
 	char *tx_tmp_buf;
 	char *rx_tmp_buf;
-	int ret = 0;
-
-	priv->use_spimem = true;
+	int i, ret = 0;
 
 	mtk_spim_reset(priv);
 	mtk_spim_hw_init(slave);
@@ -499,7 +500,7 @@ static int mtk_spim_exec_op(struct spi_slave *slave,
 
 	tx_size = max(tx_size, (u32)32);
 
-	/* Fill up tx data*/
+	/* Fill up tx data */
 	tx_tmp_buf = kzalloc(tx_size, GFP_KERNEL);
 	if (!tx_tmp_buf) {
 		ret = -ENOMEM;
@@ -509,44 +510,38 @@ static int mtk_spim_exec_op(struct spi_slave *slave,
 	tx_tmp_buf[0] = op->cmd.opcode;
 
 	if (op->addr.nbytes) {
-		int i;
-
 		for (i = 0; i < op->addr.nbytes; i++)
 			tx_tmp_buf[i + 1] = op->addr.val >>
 					(8 * (op->addr.nbytes - i - 1));
 	}
 
 	if (op->dummy.nbytes)
-		memset(tx_tmp_buf + op->addr.nbytes + 1,
-		       0xff,
+		memset(tx_tmp_buf + op->addr.nbytes + 1, 0xff,
 		       op->dummy.nbytes);
 
 	if (op->data.nbytes && op->data.dir == SPI_MEM_DATA_OUT)
 		memcpy(tx_tmp_buf + op->dummy.nbytes + op->addr.nbytes + 1,
-		       op->data.buf.out,
-		       op->data.nbytes);
-	/* Finish filling up tx data*/
+		       op->data.buf.out, op->data.nbytes);
+	/* Finish filling up tx data */
 
-	priv->tx_dma = dma_map_single(tx_tmp_buf,
-				       tx_size, DMA_TO_DEVICE);
+	priv->tx_dma = dma_map_single(tx_tmp_buf, tx_size, DMA_TO_DEVICE);
 	if (dma_mapping_error(priv->dev, priv->tx_dma)) {
 		ret = -ENOMEM;
 		goto tx_free;
 	}
 
 	if (op->data.dir == SPI_MEM_DATA_IN) {
-		if(!IS_ALIGNED((size_t)op->data.buf.in, 4)) {
+		if (!IS_ALIGNED((size_t)op->data.buf.in, 4)) {
 			rx_tmp_buf = kzalloc(op->data.nbytes, GFP_KERNEL);
 			if (!rx_tmp_buf) {
 				ret = -ENOMEM;
 				goto tx_unmap;
 			}
-		}
-		else
+		} else {
 			rx_tmp_buf = op->data.buf.in;
+		}
 
-		priv->rx_dma = dma_map_single(rx_tmp_buf,
-					      op->data.nbytes,
+		priv->rx_dma = dma_map_single(rx_tmp_buf, op->data.nbytes,
 					      DMA_FROM_DEVICE);
 		if (dma_mapping_error(priv->dev, priv->rx_dma)) {
 			ret = -ENOMEM;
@@ -571,7 +566,7 @@ static int mtk_spim_exec_op(struct spi_slave *slave,
 		goto rx_unmap;
 
 	if (op->data.dir == SPI_MEM_DATA_IN &&
-		!IS_ALIGNED((size_t)op->data.buf.in, 4))
+	    !IS_ALIGNED((size_t)op->data.buf.in, 4))
 		memcpy(op->data.buf.in, rx_tmp_buf, op->data.nbytes);
 
 rx_unmap:
@@ -598,23 +593,21 @@ tx_unmap:
 tx_free:
 	kfree(tx_tmp_buf);
 exit:
-	priv->use_spimem = false;
-
 	return ret;
 }
 
 static int mtk_spim_adjust_op_size(struct spi_slave *slave,
-                                      struct spi_mem_op *op)
+				   struct spi_mem_op *op)
 {
 	int opcode_len;
 
-	if(!op->data.nbytes)
+	if (!op->data.nbytes)
 		return 0;
 
 	if (op->data.dir != SPI_MEM_NO_DATA) {
 		opcode_len = 1 + op->addr.nbytes + op->dummy.nbytes;
 		if (opcode_len + op->data.nbytes > MTK_SPI_IPM_PACKET_SIZE) {
-			op->data.nbytes = MTK_SPI_IPM_PACKET_SIZE -opcode_len;
+			op->data.nbytes = MTK_SPI_IPM_PACKET_SIZE - opcode_len;
 			/* force data buffer dma-aligned. */
 			op->data.nbytes -= op->data.nbytes % 4;
 		}
@@ -627,19 +620,17 @@ static int mtk_spim_get_attr(struct mtk_spim_priv *priv, struct udevice *dev)
 {
 	int ret;
 
-	priv->hw_cap.need_pad_sel = dev_read_bool(dev, "need_pad_sel");
-	priv->hw_cap.must_tx = dev_read_bool(dev, "must_tx");
 	priv->hw_cap.enhance_timing = dev_read_bool(dev, "enhance_timing");
 	priv->hw_cap.dma_ext = dev_read_bool(dev, "dma_ext");
 	priv->hw_cap.ipm_design = dev_read_bool(dev, "ipm_design");
 	priv->hw_cap.support_quad = dev_read_bool(dev, "support_quad");
 
 	ret = dev_read_u32(dev, "tick_dly", &priv->tick_dly);
-	if(ret < 0)
+	if (ret < 0)
 		dev_err(priv->dev, "tick dly not set.\n");
 
 	ret = dev_read_u32(dev, "sample_sel", &priv->sample_sel);
-	if(ret < 0)
+	if (ret < 0)
 		dev_err(priv->dev, "sample sel not set.\n");
 
 	return ret;

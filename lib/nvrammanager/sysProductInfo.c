@@ -107,7 +107,7 @@ static SYSMGR_PROINFO_STR_MAP l_mapProductInfoId[] = {
 };
 
 static PRODUCT_INFO_STRUCT g_sysProductInfo;
-static char productInfoBuf[SYSMGR_PROINFO_CONTENT_MAX_LEN];
+//static char productInfoBuf[SYSMGR_PROINFO_CONTENT_MAX_LEN];
 static char supportListBuf[SYSMGR_SUPPORTLIST_CONTENT_MAX_LEN];
 
 /**************************************************************************************************/
@@ -617,8 +617,8 @@ sysmgr_proinfo_buildStructByEnv(PRODUCT_INFO_STRUCT *productInfo)
 
     unsigned int major_ver = 0;
     unsigned int minor_ver = 0;
-    int rev_ver = 0;
-    int special_id = 0;
+    //int rev_ver = 0;
+    //int special_id = 0;
 
     if ((!product_name) || (!hardware_verison_str) || (!special_id_str))
     {

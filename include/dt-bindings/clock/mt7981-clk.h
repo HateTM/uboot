@@ -1,3 +1,10 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/*
+ * Copyright (C) 2022 MediaTek Inc. All rights reserved.
+ *
+ * Author: Sam Shih <sam.shih@mediatek.com>
+ */
+
 #ifndef _DT_BINDINGS_CLK_MT7981_H
 #define _DT_BINDINGS_CLK_MT7981_H
 

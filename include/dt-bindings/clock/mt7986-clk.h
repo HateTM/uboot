@@ -1,3 +1,10 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/*
+ * Copyright (C) 2022 MediaTek Inc. All rights reserved.
+ *
+ * Author: Sam Shih <sam.shih@mediatek.com>
+ */
+
 #ifndef _DT_BINDINGS_CLK_MT7986_H
 #define _DT_BINDINGS_CLK_MT7986_H
 
@@ -39,7 +46,7 @@
 #define CK_INFRA_USB_XHCI_CK		33
 #define CK_INFRA_PCIE_GFMUX_TL_O_PRE	34
 #define CK_INFRA_F26M_CK0		35
-#define CK_INFRA_HD_133M        	36
+#define CK_INFRA_HD_133M		36
 #define CLK_INFRA_NR_CLK		37
 
 /* TOPCKGEN */
@@ -240,4 +247,3 @@
 #endif
 
 /* _DT_BINDINGS_CLK_MT7986_H */
-
