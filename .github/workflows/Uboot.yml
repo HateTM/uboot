@@ -1,0 +1,58 @@
+name: Build Two U-Boot Variants for MT7986
+
+on:
+  push:
+    branches: [ U23 ]
+  pull_request:
+    branches: [ U23 ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout sources
+      uses: actions/checkout@v4
+
+    - name: Install build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential bison flex libssl-dev \
+            bc python3 python3-pip libncurses5-dev \
+            gcc-aarch64-linux-gnu
+
+    # --- Сборка первого варианта U-Boot ---
+    - name: Build first U-Boot
+      run: |
+        cp firstuboot.txt .config
+        make olddefconfig CROSS_COMPILE=aarch64-linux-gnu-
+        make -j$(nproc) CROSS_COMPILE=aarch64-linux-gnu-
+        cp u-boot.bin u-boot-first.bin
+
+    # --- Сборка второго варианта U-Boot ---
+    - name: Build second U-Boot
+      run: |
+        make distclean
+        cp seconduboot.txt .config
+        make olddefconfig CROSS_COMPILE=aarch64-linux-gnu-
+        make -j$(nproc) CROSS_COMPILE=aarch64-linux-gnu-
+        cp u-boot.bin u-boot-second.bin
+
+    # --- Генерация second-uboot.bin через mkimage ---
+    - name: Make mkimage of second U-Boot
+      run: |
+        tools/mkimage -A arm -T standalone -C none -n "seconduboot" \
+          -e 0x41e00000 \
+          -d u-boot-second.bin second-uboot.bin
+
+    # --- Сохранение артефактов ---
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: u-boot-variants
+        path: |
+          u-boot-first.bin
+          u-boot-second.bin
+          second-uboot.bin
+          tools/mkimage
